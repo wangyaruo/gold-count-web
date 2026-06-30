@@ -1,113 +1,113 @@
-# Gold Ledger Design
+# 黄金小账本设计说明
 
-## Goal
+## 目标
 
-Build a small personal gold ledger web app for recording gold buy and sell transactions, grams, prices, fees, and notes. The app should make it easy to see current holdings, realized profit and loss, unrealized profit and loss, and total profit and loss.
+构建一个个人黄金记账网页应用，用来记录黄金买入和卖出交易，包括克数、单价、费用和备注。应用需要让用户清楚看到当前持仓、已实现盈亏、持仓浮盈和总盈亏。
 
-## Product Scope
+## 产品范围
 
-- The app is a Vue single-page app served by Vite during local use.
-- User ledger data is stored in `mock/ledger-data.json`.
-- The Vite local dev server exposes a small `/api/ledger-data` endpoint that reads and writes the mock data file.
-- There is no login, cloud backend, database, account sync, or automatic gold price feed.
-- The current gold price is entered manually by the user and persisted locally.
-- The app is suitable for deployment from a GitHub repository, including GitHub Pages.
+- 应用是一个基于 Vue 的单页应用，本地使用时由 Vite 提供服务。
+- 用户账本数据保存在 `mock/ledger-data.json`。
+- Vite 本地开发服务提供 `/api/ledger-data` 接口，用于读取和写入 mock 数据文件。
+- 不包含登录、云端后端、数据库、账号同步和自动金价接口。
+- 当前金价由用户手动输入，并随账本数据一起保存。
+- 项目可以构建为静态前端页面，但纯 GitHub Pages 这类静态托管环境不能写回 `mock/ledger-data.json`。
 
-## Technical Stack
+## 技术栈
 
 - Vue 3
 - TypeScript
 - Vite
-- Element Plus for UI components
-- Vitest for unit tests
+- Element Plus
+- Vitest
 
-## Core Features
+## 核心功能
 
-1. Add a transaction with type, date, grams, unit price, fee, and note.
-2. Edit an existing transaction.
-3. Delete an existing transaction.
-4. Filter the transaction list by all, buy, or sell.
-5. Manually enter and save the current gold price.
-6. Show summary metrics:
-   - Holding grams
-   - Remaining holding cost
-   - Current holding value
-   - Unrealized profit and loss
-   - Realized profit and loss
-   - Total profit and loss
-7. Keep data after page refresh through `mock/ledger-data.json`.
-8. Show an empty state when there are no transactions.
+1. 新增交易，字段包括类型、日期、克数、单价、费用和备注。
+2. 编辑已有交易。
+3. 删除已有交易。
+4. 按全部、买入、卖出筛选交易列表。
+5. 手动输入并保存当前金价。
+6. 展示账本汇总指标：
+   - 持仓克数
+   - 剩余成本
+   - 当前估值
+   - 持仓浮盈
+   - 已实现盈亏
+   - 总盈亏
+7. 刷新页面后通过 `mock/ledger-data.json` 保留数据。
+8. 没有交易时展示空状态。
 
-## Calculation Rules
+## 计算规则
 
-- Buy cost equals `grams * unitPrice + fee`.
-- Sell income equals `grams * unitPrice - fee`.
-- Realized profit and loss uses FIFO: the oldest available buy lots are sold first.
-- Remaining holding cost is the cost basis left after FIFO sell matching.
-- Current holding value equals `currentGoldPrice * holdingGrams`.
-- Unrealized profit and loss equals `currentHoldingValue - remainingHoldingCost`.
-- Total profit and loss equals `realizedProfitLoss + unrealizedProfitLoss`.
-- A sell transaction is invalid if its grams exceed currently available holdings after previous transactions.
+- 买入成本 = `grams * unitPrice + fee`。
+- 卖出收入 = `grams * unitPrice - fee`。
+- 已实现盈亏使用 FIFO 计算，最早可用的买入批次先被卖出。
+- 剩余成本是 FIFO 卖出匹配后仍持有黄金的成本基础。
+- 当前估值 = `currentGoldPrice * holdingGrams`。
+- 持仓浮盈 = `currentHoldingValue - remainingHoldingCost`。
+- 总盈亏 = `realizedProfitLoss + unrealizedProfitLoss`。
+- 如果卖出克数超过前序交易形成的可用持仓，则该卖出交易无效。
 
-## Component Design
+## 组件设计
 
-- `SummaryCards`: displays the six key ledger metrics.
-- `GoldPriceInput`: handles current gold price entry and save feedback.
-- `TransactionForm`: handles add and edit flows for buy and sell records.
-- `TransactionTable`: displays transaction rows, filter controls, edit action, and delete action.
-- `EmptyLedger`: displays the no-data state.
+- `SummaryCards`：展示六个核心账本指标。
+- `GoldPriceInput`：负责当前金价输入和保存反馈。
+- `TransactionForm`：负责新增和编辑买入、卖出记录。
+- `TransactionTable`：展示交易列表、筛选控件、编辑操作和删除操作。
+- `EmptyLedger`：展示无交易数据时的空状态。
 
-## Data Modules
+## 数据模块
 
-- `goldLedger`: pure TypeScript calculation module for FIFO lots, holding state, realized profit and loss, unrealized profit and loss, and validation.
-- `storage`: frontend API client for reading and saving transactions, current gold price, and simple view state through `/api/ledger-data`.
-- `mockDataStore`: local server-side JSON file reader and writer for `mock/ledger-data.json`.
-- Shared types define transaction records and ledger summaries.
+- `goldLedger`：纯 TypeScript 计算模块，负责 FIFO 批次、持仓状态、已实现盈亏、持仓浮盈和交易校验。
+- `storage`：前端 API 客户端，通过 `/api/ledger-data` 读取和保存交易、当前金价、视图筛选状态。
+- `mockDataStore`：本地服务端 JSON 文件读写模块，负责 `mock/ledger-data.json` 的解析、兜底和格式化写入。
+- 共享类型定义交易记录、账本数据和汇总结果。
 
-## Validation And Error Handling
+## 校验和错误处理
 
-- Date is required.
-- Type is required.
-- Grams must be greater than 0.
-- Unit price must be greater than 0.
-- Fee defaults to 0 and cannot be negative.
-- Sell grams cannot exceed available holdings.
-- Invalid form submissions show Element Plus validation messages.
-- Storage parsing failures fall back to empty data instead of crashing the page.
-- Save failures show a visible Element Plus error message.
+- 日期必填。
+- 类型必填。
+- 克数必须大于 0。
+- 单价必须大于 0。
+- 费用默认为 0，且不能为负数。
+- 卖出克数不能超过当前可用持仓。
+- 表单提交无效时显示 Element Plus 校验提示。
+- 数据解析失败时回退到空账本数据，避免页面崩溃。
+- 保存失败时显示可见的 Element Plus 错误提示。
 
-## UI Direction
+## 界面方向
 
-The UI should feel like a focused personal finance tool rather than a marketing page. The first screen is the actual ledger. The layout uses restrained colors, clear numbers, and compact controls:
+界面应该像一个专注的个人财务工具，而不是营销页面。首屏直接展示账本本身，整体使用克制的颜色、清晰的数字和紧凑的控件。
 
-- Header with app name and current gold price input.
-- Summary metric area near the top.
-- Main work area with transaction form and transaction table.
-- Responsive layout that stacks cleanly on mobile.
-- Profit values use positive and negative visual treatment, while keeping the overall palette calm.
+- 顶部展示应用名称和当前金价输入。
+- 汇总指标区域靠近页面顶部。
+- 主工作区包含交易表单和交易表格。
+- 移动端布局自然堆叠。
+- 盈利和亏损使用明确但克制的视觉状态。
 
-## Testing Plan
+## 测试计划
 
-Unit tests cover the ledger calculation module:
+账本计算模块需要覆盖：
 
-- Buy-only holdings.
-- FIFO realized profit and loss across multiple buy lots.
-- Buy and sell fees.
-- Remaining cost after partial sells.
-- Unrealized and total profit and loss from manual current price.
-- Oversell validation.
+- 只有买入记录时的持仓和成本。
+- 多个买入批次下的 FIFO 已实现盈亏。
+- 买入费用和卖出费用。
+- 部分卖出后的剩余成本。
+- 基于手动当前金价计算持仓浮盈和总盈亏。
+- 超卖校验。
 
-Build verification covers:
+构建验证需要覆盖：
 
-- TypeScript type check.
-- Vitest test run.
-- Production build.
+- TypeScript 类型检查。
+- Vitest 单元测试。
+- 生产构建。
 
-## Out Of Scope
+## 不在范围内
 
-- User accounts.
-- Cloud sync.
-- Cloud backend API.
-- Real-time gold price integration.
-- Multi-currency support.
-- Tax reporting.
+- 用户账号。
+- 云端同步。
+- 云端后端 API。
+- 实时金价接入。
+- 多币种支持。
+- 税务报表。
