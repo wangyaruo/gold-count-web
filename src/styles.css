@@ -3,6 +3,15 @@
   font-family:
     Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   background: #f5f7fa;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --muted: #667085;
+  --text: #1d2129;
+  --gold: #b98900;
+  --gold-soft: #fff6db;
+  --green: #047857;
+  --red: #c2410c;
+  --blue: #1d4ed8;
 }
 
 * {
@@ -14,7 +23,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    linear-gradient(135deg, rgba(246, 196, 83, 0.14), transparent 30%),
+    linear-gradient(135deg, rgba(246, 196, 83, 0.14), transparent 34%),
+    linear-gradient(160deg, rgba(29, 78, 216, 0.07), transparent 42%),
     #f5f7fa;
 }
 
@@ -31,12 +41,16 @@ textarea {
 }
 
 .app-header {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 360px);
+  gap: 20px;
+  align-items: start;
   margin-bottom: 20px;
 }
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #8a6f1f;
+  color: var(--gold);
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -46,11 +60,225 @@ textarea {
   margin: 0;
   font-size: 32px;
   line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .app-header p:last-child {
   max-width: 620px;
   margin: 10px 0 0;
-  color: #5c6370;
+  color: var(--muted);
   line-height: 1.7;
+}
+
+.el-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.el-card__header {
+  padding: 16px 18px;
+}
+
+.el-card__body {
+  padding: 18px;
+}
+
+.gold-price-card {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.price-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.price-input {
+  width: 100%;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-card {
+  min-height: 132px;
+  background: var(--surface);
+}
+
+.summary-label,
+.summary-hint,
+.panel-kicker {
+  margin: 0;
+  color: var(--muted);
+}
+
+.summary-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-value {
+  margin: 12px 0 8px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.summary-value.is-profit {
+  color: var(--green);
+}
+
+.summary-value.is-loss {
+  color: var(--red);
+}
+
+.summary-hint {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.ledger-panel {
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-header h2 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.panel-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.transaction-form {
+  display: grid;
+  gap: 2px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.full-width,
+.submit-button {
+  width: 100%;
+}
+
+.table-card,
+.form-card,
+.empty-card {
+  background: var(--surface);
+}
+
+.table-header {
+  align-items: flex-start;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.transaction-table {
+  min-width: 820px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.empty-card {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+}
+
+.empty-copy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.el-button.is-circle {
+  width: 32px;
+  height: 32px;
+}
+
+@media (max-width: 1120px) {
+  .summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    width: min(100% - 24px, 720px);
+    padding-top: 20px;
+  }
+
+  .app-header,
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .app-header h1 {
+    font-size: 27px;
+  }
+
+  .summary-grid,
+  .form-row,
+  .price-control {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .summary-card {
+    min-height: 112px;
+  }
 }
