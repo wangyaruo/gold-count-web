@@ -9,6 +9,7 @@
         <el-button
           v-if="editingTransaction"
           :icon="Close"
+          :disabled="disabled"
           text
           @click="emit('cancel-edit')"
         >
@@ -89,6 +90,7 @@
       <el-button
         class="submit-button"
         type="primary"
+        :disabled="disabled"
         :icon="editingTransaction ? Edit : Plus"
         @click="submitForm"
       >
@@ -105,6 +107,7 @@ import { reactive, ref, watch } from "vue";
 import type { GoldTransaction, TransactionDraft } from "../types";
 
 const props = defineProps<{
+  disabled?: boolean;
   editingTransaction: GoldTransaction | null;
   resetToken: number;
 }>();

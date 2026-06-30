@@ -16,6 +16,7 @@
 
     <section class="workspace-grid">
       <TransactionForm
+        :disabled="isLoading"
         :editing-transaction="editingTransaction"
         :reset-token="formResetToken"
         @cancel-edit="editingTransaction = null"
@@ -38,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import EmptyLedger from "./components/EmptyLedger.vue";
 import GoldPriceInput from "./components/GoldPriceInput.vue";
@@ -50,25 +51,20 @@ import {
   sortTransactionsForDisplay,
   validateTransactionDraft
 } from "./lib/goldLedger";
-import {
-  loadCurrentGoldPrice,
-  loadTransactionFilter,
-  loadTransactions,
-  saveCurrentGoldPrice,
-  saveTransactionFilter,
-  saveTransactions
-} from "./lib/storage";
+import { loadLedgerData, saveLedgerData } from "./lib/storage";
 import type {
   GoldTransaction,
+  LedgerData,
   TransactionDraft,
   TransactionFilter
 } from "./types";
 
-const transactions = ref<GoldTransaction[]>(loadTransactions());
-const currentGoldPrice = ref(loadCurrentGoldPrice());
-const transactionFilter = ref<TransactionFilter>(loadTransactionFilter());
+const transactions = ref<GoldTransaction[]>([]);
+const currentGoldPrice = ref(0);
+const transactionFilter = ref<TransactionFilter>("all");
 const editingTransaction = ref<GoldTransaction | null>(null);
 const formResetToken = ref(0);
+const isLoading = ref(true);
 
 const summary = computed(() =>
   calculateLedger(transactions.value, currentGoldPrice.value)
@@ -89,30 +85,62 @@ function createTransactionId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function persistTransactions(nextTransactions: GoldTransaction[]): void {
-  transactions.value = nextTransactions;
-  saveTransactions(nextTransactions);
+function buildLedgerData(overrides: Partial<LedgerData> = {}): LedgerData {
+  return {
+    currentGoldPrice: currentGoldPrice.value,
+    transactionFilter: transactionFilter.value,
+    transactions: transactions.value,
+    ...overrides
+  };
 }
 
-function handleGoldPriceSave(price: number): void {
-  currentGoldPrice.value = price;
-  saveCurrentGoldPrice(price);
-  ElMessage.success("当前金价已保存");
+function applyLedgerData(data: LedgerData): void {
+  currentGoldPrice.value = data.currentGoldPrice;
+  transactionFilter.value = data.transactionFilter;
+  transactions.value = data.transactions;
 }
 
-function handleFilterChange(filter: TransactionFilter): void {
-  transactionFilter.value = filter;
-  saveTransactionFilter(filter);
+async function persistLedgerData(data: LedgerData): Promise<boolean> {
+  try {
+    applyLedgerData(await saveLedgerData(data));
+    return true;
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : "保存账本数据失败");
+    return false;
+  }
+}
+
+onMounted(async () => {
+  applyLedgerData(await loadLedgerData());
+  isLoading.value = false;
+});
+
+async function handleGoldPriceSave(price: number): Promise<void> {
+  if (await persistLedgerData(buildLedgerData({ currentGoldPrice: price }))) {
+    ElMessage.success("当前金价已保存");
+  }
+}
+
+async function handleFilterChange(filter: TransactionFilter): Promise<void> {
+  await persistLedgerData(buildLedgerData({ transactionFilter: filter }));
 }
 
 function handleTransactionEdit(transaction: GoldTransaction): void {
   editingTransaction.value = transaction;
 }
 
-function handleTransactionDelete(id: string): void {
-  persistTransactions(
-    transactions.value.filter((transaction) => transaction.id !== id)
+async function handleTransactionDelete(id: string): Promise<void> {
+  const saved = await persistLedgerData(
+    buildLedgerData({
+      transactions: transactions.value.filter(
+        (transaction) => transaction.id !== id
+      )
+    })
   );
+
+  if (!saved) {
+    return;
+  }
 
   if (editingTransaction.value?.id === id) {
     editingTransaction.value = null;
@@ -121,7 +149,7 @@ function handleTransactionDelete(id: string): void {
   ElMessage.success("交易已删除");
 }
 
-function handleTransactionSave(draft: TransactionDraft): void {
+async function handleTransactionSave(draft: TransactionDraft): Promise<void> {
   const editingId = editingTransaction.value?.id;
   const errors = validateTransactionDraft(
     draft,
@@ -135,21 +163,37 @@ function handleTransactionSave(draft: TransactionDraft): void {
   }
 
   if (editingId) {
-    persistTransactions(
-      transactions.value.map((transaction) =>
-        transaction.id === editingId ? { id: editingId, ...draft } : transaction
-      )
+    const saved = await persistLedgerData(
+      buildLedgerData({
+        transactions: transactions.value.map((transaction) =>
+          transaction.id === editingId
+            ? { id: editingId, ...draft }
+            : transaction
+        )
+      })
     );
+    if (!saved) {
+      return;
+    }
+
     editingTransaction.value = null;
     ElMessage.success("交易已更新");
   } else {
-    persistTransactions([
-      ...transactions.value,
-      {
-        id: createTransactionId(),
-        ...draft
-      }
-    ]);
+    const saved = await persistLedgerData(
+      buildLedgerData({
+        transactions: [
+          ...transactions.value,
+          {
+            id: createTransactionId(),
+            ...draft
+          }
+        ]
+      })
+    );
+    if (!saved) {
+      return;
+    }
+
     ElMessage.success("交易已添加");
   }
 

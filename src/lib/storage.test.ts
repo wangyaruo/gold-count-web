@@ -1,86 +1,64 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import {
-  loadCurrentGoldPrice,
-  loadTransactionFilter,
-  loadTransactions,
-  saveCurrentGoldPrice,
-  saveTransactionFilter,
-  saveTransactions
-} from "./storage";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { defaultLedgerData } from "./ledgerDataDefaults";
+import { loadLedgerData, saveLedgerData } from "./storage";
+import type { LedgerData } from "../types";
 
-class MemoryStorage implements Storage {
-  private values = new Map<string, string>();
+describe("storage API client", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
 
-  get length(): number {
-    return this.values.size;
-  }
+  it("loads ledger data from the mock API", async () => {
+    const data: LedgerData = {
+      currentGoldPrice: 588.5,
+      transactionFilter: "buy",
+      transactions: [
+        {
+          id: "buy-1",
+          type: "buy",
+          date: "2026-06-01",
+          grams: 10,
+          unitPrice: 520,
+          fee: 30,
+          note: "金条"
+        }
+      ]
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(data)
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
-  clear(): void {
-    this.values.clear();
-  }
+    await expect(loadLedgerData()).resolves.toEqual(data);
+    expect(fetchMock).toHaveBeenCalledWith("/api/ledger-data");
+  });
 
-  getItem(key: string): string | null {
-    return this.values.get(key) ?? null;
-  }
+  it("saves ledger data to the mock API", async () => {
+    const data: LedgerData = {
+      currentGoldPrice: 601,
+      transactionFilter: "sell",
+      transactions: []
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(data)
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
-  key(index: number): string | null {
-    return Array.from(this.values.keys())[index] ?? null;
-  }
-
-  removeItem(key: string): void {
-    this.values.delete(key);
-  }
-
-  setItem(key: string, value: string): void {
-    this.values.set(key, value);
-  }
-}
-
-describe("storage", () => {
-  beforeEach(() => {
-    Object.defineProperty(globalThis, "localStorage", {
-      value: new MemoryStorage(),
-      configurable: true
+    await expect(saveLedgerData(data)).resolves.toEqual(data);
+    expect(fetchMock).toHaveBeenCalledWith("/api/ledger-data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
     });
   });
 
-  it("saves and loads transactions", () => {
-    const transactions = [
-      {
-        id: "buy-1",
-        type: "buy" as const,
-        date: "2026-06-01",
-        grams: 1,
-        unitPrice: 500,
-        fee: 2,
-        note: "test"
-      }
-    ];
+  it("returns defaults when the mock API request fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
 
-    saveTransactions(transactions);
-
-    expect(loadTransactions()).toEqual(transactions);
-  });
-
-  it("saves and loads current gold price", () => {
-    saveCurrentGoldPrice(568.5);
-
-    expect(loadCurrentGoldPrice()).toBe(568.5);
-  });
-
-  it("saves and loads transaction filter", () => {
-    saveTransactionFilter("sell");
-
-    expect(loadTransactionFilter()).toBe("sell");
-  });
-
-  it("falls back to defaults for invalid data", () => {
-    localStorage.setItem("gold-ledger:transactions", "{bad json");
-    localStorage.setItem("gold-ledger:current-price", "not-a-number");
-    localStorage.setItem("gold-ledger:filter", "unknown");
-
-    expect(loadTransactions()).toEqual([]);
-    expect(loadCurrentGoldPrice()).toBe(0);
-    expect(loadTransactionFilter()).toBe("all");
+    await expect(loadLedgerData()).resolves.toEqual(defaultLedgerData);
   });
 });

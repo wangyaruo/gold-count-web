@@ -5,8 +5,16 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true,
+    "outDir": ".tsbuild/node",
     "skipLibCheck": true,
+    "tsBuildInfoFile": ".tsbuild/tsconfig.node.tsbuildinfo",
     "types": ["node"]
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "server/**/*.ts",
+    "src/types.ts",
+    "src/lib/ledgerDataDefaults.ts"
+  ],
+  "exclude": ["server/**/*.test.ts"]
 }

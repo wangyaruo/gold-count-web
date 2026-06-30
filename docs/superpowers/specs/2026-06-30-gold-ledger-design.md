@@ -6,9 +6,10 @@ Build a small personal gold ledger web app for recording gold buy and sell trans
 
 ## Product Scope
 
-- The app is a pure frontend single-page app.
-- Data is stored locally in the user's browser with `localStorage`.
-- There is no login, backend, database, account sync, or automatic gold price feed.
+- The app is a Vue single-page app served by Vite during local use.
+- User ledger data is stored in `mock/ledger-data.json`.
+- The Vite local dev server exposes a small `/api/ledger-data` endpoint that reads and writes the mock data file.
+- There is no login, cloud backend, database, account sync, or automatic gold price feed.
 - The current gold price is entered manually by the user and persisted locally.
 - The app is suitable for deployment from a GitHub repository, including GitHub Pages.
 
@@ -34,7 +35,7 @@ Build a small personal gold ledger web app for recording gold buy and sell trans
    - Unrealized profit and loss
    - Realized profit and loss
    - Total profit and loss
-7. Keep data after page refresh through local browser storage.
+7. Keep data after page refresh through `mock/ledger-data.json`.
 8. Show an empty state when there are no transactions.
 
 ## Calculation Rules
@@ -59,7 +60,8 @@ Build a small personal gold ledger web app for recording gold buy and sell trans
 ## Data Modules
 
 - `goldLedger`: pure TypeScript calculation module for FIFO lots, holding state, realized profit and loss, unrealized profit and loss, and validation.
-- `storage`: local persistence module for transactions, current gold price, and simple view state.
+- `storage`: frontend API client for reading and saving transactions, current gold price, and simple view state through `/api/ledger-data`.
+- `mockDataStore`: local server-side JSON file reader and writer for `mock/ledger-data.json`.
 - Shared types define transaction records and ledger summaries.
 
 ## Validation And Error Handling
@@ -72,6 +74,7 @@ Build a small personal gold ledger web app for recording gold buy and sell trans
 - Sell grams cannot exceed available holdings.
 - Invalid form submissions show Element Plus validation messages.
 - Storage parsing failures fall back to empty data instead of crashing the page.
+- Save failures show a visible Element Plus error message.
 
 ## UI Direction
 
@@ -104,7 +107,7 @@ Build verification covers:
 
 - User accounts.
 - Cloud sync.
-- Backend API.
+- Cloud backend API.
 - Real-time gold price integration.
 - Multi-currency support.
 - Tax reporting.

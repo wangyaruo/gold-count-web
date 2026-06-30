@@ -1,82 +1,33 @@
-import type { GoldTransaction, TransactionFilter } from "../types";
+import { defaultLedgerData } from "./ledgerDataDefaults";
+import type { LedgerData } from "../types";
 
-const TRANSACTIONS_KEY = "gold-ledger:transactions";
-const CURRENT_PRICE_KEY = "gold-ledger:current-price";
-const FILTER_KEY = "gold-ledger:filter";
+const LEDGER_DATA_ENDPOINT = "/api/ledger-data";
 
-function getStorage(): Storage | null {
-  return typeof localStorage === "undefined" ? null : localStorage;
-}
-
-function readJson<T>(key: string, fallback: T): T {
-  const storage = getStorage();
-  if (!storage) {
-    return fallback;
-  }
-
+export async function loadLedgerData(): Promise<LedgerData> {
   try {
-    const raw = storage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    const response = await fetch(LEDGER_DATA_ENDPOINT);
+    if (!response.ok) {
+      return defaultLedgerData;
+    }
+
+    return (await response.json()) as LedgerData;
   } catch {
-    return fallback;
+    return defaultLedgerData;
   }
 }
 
-function writeJson(key: string, value: unknown): void {
-  const storage = getStorage();
-  if (!storage) {
-    return;
+export async function saveLedgerData(data: LedgerData): Promise<LedgerData> {
+  const response = await fetch(LEDGER_DATA_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
+
+  if (!response.ok) {
+    throw new Error("保存账本数据失败");
   }
 
-  storage.setItem(key, JSON.stringify(value));
-}
-
-function isTransaction(value: unknown): value is GoldTransaction {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const candidate = value as Partial<GoldTransaction>;
-  return (
-    typeof candidate.id === "string" &&
-    (candidate.type === "buy" || candidate.type === "sell") &&
-    typeof candidate.date === "string" &&
-    typeof candidate.grams === "number" &&
-    typeof candidate.unitPrice === "number" &&
-    typeof candidate.fee === "number" &&
-    typeof candidate.note === "string"
-  );
-}
-
-export function loadTransactions(): GoldTransaction[] {
-  const transactions = readJson<unknown>(TRANSACTIONS_KEY, []);
-  return Array.isArray(transactions) && transactions.every(isTransaction)
-    ? transactions
-    : [];
-}
-
-export function saveTransactions(transactions: GoldTransaction[]): void {
-  writeJson(TRANSACTIONS_KEY, transactions);
-}
-
-export function loadCurrentGoldPrice(): number {
-  const value = readJson<unknown>(CURRENT_PRICE_KEY, 0);
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
-    ? value
-    : 0;
-}
-
-export function saveCurrentGoldPrice(price: number): void {
-  writeJson(CURRENT_PRICE_KEY, Number.isFinite(price) && price >= 0 ? price : 0);
-}
-
-export function loadTransactionFilter(): TransactionFilter {
-  const value = readJson<unknown>(FILTER_KEY, "all");
-  return value === "all" || value === "buy" || value === "sell"
-    ? value
-    : "all";
-}
-
-export function saveTransactionFilter(filter: TransactionFilter): void {
-  writeJson(FILTER_KEY, filter);
+  return (await response.json()) as LedgerData;
 }
