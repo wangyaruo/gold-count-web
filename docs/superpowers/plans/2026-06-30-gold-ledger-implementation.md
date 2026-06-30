@@ -1,49 +1,52 @@
-# Gold Ledger Implementation Plan
+# 黄金小账本初始实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **给执行代理的说明：** 必须逐项执行本计划。推荐使用 `superpowers:subagent-driven-development`，也可以使用 `superpowers:executing-plans`。任务使用复选框语法记录进度。
 
-**Goal:** Build and push a Vue 3 + Element Plus personal gold ledger that records gold buy and sell transactions and shows holdings, realized P/L, unrealized P/L, and total P/L.
+> **状态说明：** 这份计划描述的是项目初始版本，数据持久化目标是浏览器 `localStorage`。后续把数据迁移到 `mock/ledger-data.json` 的工作见 `docs/superpowers/plans/2026-06-30-mock-file-persistence.md`。
 
-**Architecture:** Use a pure frontend Vite app. Keep ledger calculation in a pure TypeScript module, browser persistence in a separate storage module, and Vue components focused on interaction and display.
+**目标：** 构建并推送一个 Vue 3 + Element Plus 的个人黄金账本，用来记录黄金买入和卖出交易，并展示当前持仓、已实现盈亏、持仓浮盈和总盈亏。
 
-**Tech Stack:** Vue 3, TypeScript, Vite, Element Plus, Vitest, vue-tsc.
+**架构：** 使用纯前端 Vite 应用。账本计算放在纯 TypeScript 模块中，浏览器本地持久化放在独立存储模块中，Vue 组件只负责交互和展示。
+
+**技术栈：** Vue 3、TypeScript、Vite、Element Plus、Vitest、vue-tsc。
 
 ---
 
-## File Structure
+## 文件结构
 
-- Create `package.json`: project scripts and dependencies.
-- Create `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.node.json`: Vite and TypeScript setup.
-- Create `src/main.ts`: Vue app bootstrap and Element Plus registration.
-- Create `src/App.vue`: app shell, state coordination, add/edit/delete handlers.
-- Create `src/types.ts`: shared transaction, form, and summary types.
-- Create `src/lib/goldLedger.ts`: pure FIFO calculation and validation logic.
-- Create `src/lib/goldLedger.test.ts`: Vitest coverage for calculation rules.
-- Create `src/lib/storage.ts`: localStorage read/write helpers with parse fallback.
-- Create `src/components/SummaryCards.vue`: summary metrics display.
-- Create `src/components/GoldPriceInput.vue`: current gold price editor.
-- Create `src/components/TransactionForm.vue`: add/edit transaction form.
-- Create `src/components/TransactionTable.vue`: filterable transaction table with actions.
-- Create `src/components/EmptyLedger.vue`: empty state.
-- Create `src/styles.css`: app-level responsive styling and Element Plus polish.
-- Create `.gitignore`, `README.md`: repository hygiene and usage notes.
+- 创建 `package.json`：项目脚本和依赖。
+- 创建 `index.html`、`vite.config.ts`、`tsconfig.json`、`tsconfig.node.json`：Vite 和 TypeScript 配置。
+- 创建 `src/main.ts`：Vue 应用启动和 Element Plus 注册。
+- 创建 `src/App.vue`：应用外壳、状态协调、新增、编辑、删除处理。
+- 创建 `src/types.ts`：共享交易、表单和汇总类型。
+- 创建 `src/lib/goldLedger.ts`：纯 FIFO 计算和交易校验逻辑。
+- 创建 `src/lib/goldLedger.test.ts`：计算规则的 Vitest 覆盖。
+- 创建 `src/lib/storage.ts`：`localStorage` 读写辅助函数和解析兜底。
+- 创建 `src/components/SummaryCards.vue`：汇总指标展示。
+- 创建 `src/components/GoldPriceInput.vue`：当前金价编辑器。
+- 创建 `src/components/TransactionForm.vue`：新增和编辑交易表单。
+- 创建 `src/components/TransactionTable.vue`：带筛选和操作的交易表格。
+- 创建 `src/components/EmptyLedger.vue`：空状态。
+- 创建 `src/styles.css`：应用级响应式样式和 Element Plus 样式微调。
+- 创建 `.gitignore`、`README.md`：仓库忽略规则和使用说明。
 
-## Task 1: Project Scaffold
+## 任务 1：项目脚手架
 
-**Files:**
-- Create: `package.json`
-- Create: `index.html`
-- Create: `vite.config.ts`
-- Create: `tsconfig.json`
-- Create: `tsconfig.node.json`
-- Create: `src/main.ts`
-- Create: `src/App.vue`
-- Create: `src/styles.css`
-- Create: `.gitignore`
+**文件：**
 
-- [ ] **Step 1: Create Vite Vue project files**
+- 创建 `package.json`
+- 创建 `index.html`
+- 创建 `vite.config.ts`
+- 创建 `tsconfig.json`
+- 创建 `tsconfig.node.json`
+- 创建 `src/main.ts`
+- 创建 `src/App.vue`
+- 创建 `src/styles.css`
+- 创建 `.gitignore`
 
-Use Vue 3, TypeScript, Element Plus, Vitest, and vue-tsc scripts:
+- [ ] **步骤 1：创建 Vite Vue 项目文件**
+
+使用 Vue 3、TypeScript、Element Plus、Vitest 和 vue-tsc 脚本：
 
 ```json
 {
@@ -56,35 +59,44 @@ Use Vue 3, TypeScript, Element Plus, Vitest, and vue-tsc scripts:
 }
 ```
 
-- [ ] **Step 2: Install dependencies**
+- [ ] **步骤 2：安装依赖**
 
-Run: `npm install`
+运行：
 
-Expected: dependencies install and `package-lock.json` is created.
+```bash
+npm install
+```
 
-- [ ] **Step 3: Verify scaffold build**
+预期结果：依赖安装成功，并生成 `package-lock.json`。
 
-Run: `npm run build`
+- [ ] **步骤 3：验证脚手架构建**
 
-Expected: build exits with status 0 after the initial app compiles.
+运行：
 
-- [ ] **Step 4: Commit scaffold**
+```bash
+npm run build
+```
+
+预期结果：初始应用编译成功，构建命令以状态码 0 退出。
+
+- [ ] **步骤 4：提交脚手架**
 
 ```bash
 git add .
-git commit -m "chore: scaffold vue gold ledger app"
+git commit -m "初始化 Vue 黄金账本脚手架"
 ```
 
-## Task 2: Ledger Calculation With TDD
+## 任务 2：用 TDD 实现账本计算
 
-**Files:**
-- Create: `src/types.ts`
-- Create: `src/lib/goldLedger.test.ts`
-- Create: `src/lib/goldLedger.ts`
+**文件：**
 
-- [ ] **Step 1: Write failing tests**
+- 创建 `src/types.ts`
+- 创建 `src/lib/goldLedger.test.ts`
+- 创建 `src/lib/goldLedger.ts`
 
-Cover:
+- [ ] **步骤 1：先写失败测试**
+
+覆盖以下场景：
 
 ```ts
 it("calculates buy-only holdings with fees", () => {});
@@ -95,15 +107,19 @@ it("calculates unrealized and total profit from current price", () => {});
 it("reports oversell validation errors", () => {});
 ```
 
-- [ ] **Step 2: Run tests to verify RED**
+- [ ] **步骤 2：运行测试确认 RED**
 
-Run: `npm run test -- src/lib/goldLedger.test.ts`
+运行：
 
-Expected: FAIL because `goldLedger` implementation does not exist yet.
+```bash
+npm run test -- src/lib/goldLedger.test.ts
+```
 
-- [ ] **Step 3: Implement minimal ledger module**
+预期结果：测试失败，因为 `goldLedger` 实现尚不存在。
 
-Implement:
+- [ ] **步骤 3：实现最小账本模块**
+
+实现：
 
 ```ts
 export function calculateLedger(transactions: GoldTransaction[], currentGoldPrice: number): LedgerSummary;
@@ -111,106 +127,121 @@ export function validateTransactionDraft(draft: TransactionDraft, existing: Gold
 export function sortTransactionsForDisplay(transactions: GoldTransaction[]): GoldTransaction[];
 ```
 
-Use FIFO buy lots where each lot tracks remaining grams and remaining cost.
+使用 FIFO 买入批次。每个批次记录剩余克数和剩余成本。
 
-- [ ] **Step 4: Run tests to verify GREEN**
+- [ ] **步骤 4：运行测试确认 GREEN**
 
-Run: `npm run test -- src/lib/goldLedger.test.ts`
+运行：
 
-Expected: all ledger tests pass.
+```bash
+npm run test -- src/lib/goldLedger.test.ts
+```
 
-- [ ] **Step 5: Commit ledger logic**
+预期结果：所有账本计算测试通过。
+
+- [ ] **步骤 5：提交账本逻辑**
 
 ```bash
 git add src/types.ts src/lib/goldLedger.ts src/lib/goldLedger.test.ts
-git commit -m "feat: add gold ledger calculations"
+git commit -m "新增黄金账本计算逻辑"
 ```
 
-## Task 3: Local Storage Module
+## 任务 3：本地存储模块
 
-**Files:**
-- Create: `src/lib/storage.ts`
+**文件：**
 
-- [ ] **Step 1: Add storage helpers**
+- 创建 `src/lib/storage.ts`
 
-Implement read/write helpers for transactions, current gold price, and transaction filter. Invalid JSON returns defaults.
+- [ ] **步骤 1：添加存储辅助函数**
 
-- [ ] **Step 2: Run type/build check**
+实现交易、当前金价和交易筛选条件的读写函数。无效 JSON 需要回退到默认值。
 
-Run: `npm run build`
+- [ ] **步骤 2：运行类型和构建检查**
 
-Expected: TypeScript and Vite build pass.
+运行：
 
-- [ ] **Step 3: Commit storage module**
+```bash
+npm run build
+```
+
+预期结果：TypeScript 和 Vite 构建通过。
+
+- [ ] **步骤 3：提交存储模块**
 
 ```bash
 git add src/lib/storage.ts
-git commit -m "feat: add local ledger persistence"
+git commit -m "新增本地账本持久化"
 ```
 
-## Task 4: Vue Components
+## 任务 4：Vue 组件
 
-**Files:**
-- Create: `src/components/SummaryCards.vue`
-- Create: `src/components/GoldPriceInput.vue`
-- Create: `src/components/TransactionForm.vue`
-- Create: `src/components/TransactionTable.vue`
-- Create: `src/components/EmptyLedger.vue`
-- Modify: `src/App.vue`
+**文件：**
 
-- [ ] **Step 1: Build display components**
+- 创建 `src/components/SummaryCards.vue`
+- 创建 `src/components/GoldPriceInput.vue`
+- 创建 `src/components/TransactionForm.vue`
+- 创建 `src/components/TransactionTable.vue`
+- 创建 `src/components/EmptyLedger.vue`
+- 修改 `src/App.vue`
 
-Create summary cards, gold price input, empty state, and table components using Element Plus components such as `el-card`, `el-statistic`, `el-input-number`, `el-table`, `el-segmented`, `el-button`, and `el-popconfirm`.
+- [ ] **步骤 1：构建展示组件**
 
-- [ ] **Step 2: Build transaction form**
+使用 Element Plus 组件创建汇总卡片、金价输入、空状态和表格组件，例如 `el-card`、`el-statistic`、`el-input-number`、`el-table`、`el-segmented`、`el-button` 和 `el-popconfirm`。
 
-Use `el-form`, `el-date-picker`, `el-radio-group`, `el-input-number`, and `el-input`. Validate required date, type, grams greater than 0, unit price greater than 0, and fee at least 0.
+- [ ] **步骤 2：构建交易表单**
 
-- [ ] **Step 3: Wire app state**
+使用 `el-form`、`el-date-picker`、`el-radio-group`、`el-input-number` 和 `el-input`。校验必填日期、必填类型、克数大于 0、单价大于 0、费用不小于 0。
 
-`App.vue` loads persisted data, calculates summary through `calculateLedger`, blocks oversells with `validateTransactionDraft`, and persists changes.
+- [ ] **步骤 3：串联应用状态**
 
-- [ ] **Step 4: Run build**
+`App.vue` 加载已保存数据，通过 `calculateLedger` 计算汇总，通过 `validateTransactionDraft` 阻止超卖，并在数据变化后保存。
 
-Run: `npm run build`
+- [ ] **步骤 4：运行构建**
 
-Expected: app compiles with all components.
+运行：
 
-- [ ] **Step 5: Commit UI**
+```bash
+npm run build
+```
+
+预期结果：应用和所有组件编译通过。
+
+- [ ] **步骤 5：提交界面**
 
 ```bash
 git add src
-git commit -m "feat: build gold ledger interface"
+git commit -m "构建黄金账本界面"
 ```
 
-## Task 5: Styling, Docs, Verification, Push
+## 任务 5：样式、文档、验证和推送
 
-**Files:**
-- Modify: `src/styles.css`
-- Modify: `README.md`
+**文件：**
 
-- [ ] **Step 1: Style responsive layout**
+- 修改 `src/styles.css`
+- 修改 `README.md`
 
-Make the first screen the ledger itself, with a compact finance-tool layout, responsive stacking, stable card sizing, and no marketing hero.
+- [ ] **步骤 1：编写响应式布局样式**
 
-- [ ] **Step 2: Document usage**
+首屏直接展示账本本身，使用紧凑的财务工具布局、响应式堆叠、稳定卡片尺寸，不做营销式首页。
 
-Add README instructions for install, dev, test, build, data storage, and calculation rules.
+- [ ] **步骤 2：编写使用文档**
 
-- [ ] **Step 3: Run final verification**
+在 README 中说明安装、开发、测试、构建、数据保存方式和计算规则。
 
-Run:
+- [ ] **步骤 3：运行最终验证**
+
+运行：
 
 ```bash
 npm run test
 npm run build
 ```
 
-Expected: tests pass and production build exits 0.
+预期结果：测试通过，生产构建以状态码 0 退出。
 
-- [ ] **Step 4: Add GitHub remote and push**
+- [ ] **步骤 4：添加 GitHub 远端并推送**
 
-Run:
+运行：
 
 ```bash
 git remote add origin git@github.com:wangyaruo/gold-count-web.git
@@ -218,4 +249,4 @@ git branch -M main
 git push -u origin main
 ```
 
-Expected: branch `main` is pushed to `wangyaruo/gold-count-web`.
+预期结果：`main` 分支推送到 `wangyaruo/gold-count-web`。

@@ -1,35 +1,35 @@
-# Mock File Persistence Implementation Plan
+# mock 文件持久化实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **给执行代理的说明：** 必须逐项执行本计划。推荐使用 `superpowers:subagent-driven-development`，也可以使用 `superpowers:executing-plans`。任务使用复选框语法记录进度。
 
-**Goal:** Store user ledger data in `mock/ledger-data.json` instead of browser `localStorage`.
+**目标：** 把用户账本数据保存到 `mock/ledger-data.json`，替代浏览器 `localStorage`。
 
-**Architecture:** Add a small local file data store used by a Vite dev-server API. The Vue app loads and saves ledger state through `/api/ledger-data`, while pure ledger calculations remain unchanged.
+**架构：** 新增一个本地文件数据层，由 Vite 开发服务器 API 使用。Vue 应用通过 `/api/ledger-data` 加载和保存账本状态，纯账本计算逻辑保持不变。
 
-**Tech Stack:** Vue 3, TypeScript, Vite dev server middleware, Vitest, Node `fs/promises`.
+**技术栈：** Vue 3、TypeScript、Vite dev server middleware、Vitest、Node `fs/promises`。
 
 ---
 
-## File Structure
+## 文件结构
 
-- Create `mock/ledger-data.json`: persisted ledger data file.
-- Create `server/mockDataStore.ts`: read/write and validation helpers for the JSON file.
-- Create `server/mockApiPlugin.ts`: Vite middleware exposing `GET /api/ledger-data` and `POST /api/ledger-data`.
-- Create `server/mockDataStore.test.ts`: tests for file read/write defaults.
-- Modify `src/types.ts`: add `LedgerData`.
-- Modify `src/lib/storage.ts`: replace localStorage helpers with async API client helpers.
-- Modify `src/lib/storage.test.ts`: test API client load/save behavior with mocked `fetch`.
-- Modify `src/App.vue`: load ledger data asynchronously and save full data to the API after user edits.
-- Modify `vite.config.ts`: install mock API plugin.
-- Modify `README.md`: document `mock/ledger-data.json` persistence and GitHub Pages limitation.
+- 创建 `mock/ledger-data.json`：持久化账本数据文件。
+- 创建 `server/mockDataStore.ts`：JSON 文件读写、校验和默认值兜底。
+- 创建 `server/mockApiPlugin.ts`：Vite 中间件，提供 `GET /api/ledger-data` 和 `POST /api/ledger-data`。
+- 创建 `server/mockDataStore.test.ts`：覆盖文件读取、写入和默认值行为。
+- 修改 `src/types.ts`：新增 `LedgerData`。
+- 修改 `src/lib/storage.ts`：把 `localStorage` 辅助函数替换为异步 API 客户端。
+- 修改 `src/lib/storage.test.ts`：使用 mocked `fetch` 测试 API 客户端加载和保存行为。
+- 修改 `src/App.vue`：异步加载账本数据，并在用户编辑后把完整 `LedgerData` 保存到 API。
+- 修改 `vite.config.ts`：安装 mock API 插件。
+- 修改 `README.md`：说明 `mock/ledger-data.json` 持久化方式和 GitHub Pages 限制。
 
-## Tasks
+## 任务清单
 
-- [ ] Write failing tests for `server/mockDataStore.ts` reading defaults and writing JSON.
-- [ ] Implement `mock/ledger-data.json`, `server/mockDataStore.ts`, and `server/mockApiPlugin.ts`.
-- [ ] Write failing tests for async `src/lib/storage.ts` API helpers using mocked `fetch`.
-- [ ] Implement async frontend storage helpers.
-- [ ] Update `src/App.vue` to load and save `LedgerData`.
-- [ ] Update README.
-- [ ] Run `npm run test` and `npm run build`.
-- [ ] Commit and push to `origin/main`.
+- [ ] 为 `server/mockDataStore.ts` 编写失败测试，覆盖读取默认值和写入 JSON。
+- [ ] 实现 `mock/ledger-data.json`、`server/mockDataStore.ts` 和 `server/mockApiPlugin.ts`。
+- [ ] 为异步 `src/lib/storage.ts` API 辅助函数编写失败测试，使用 mocked `fetch`。
+- [ ] 实现异步前端存储辅助函数。
+- [ ] 更新 `src/App.vue`，改为加载和保存 `LedgerData`。
+- [ ] 更新 README。
+- [ ] 运行 `npm run test` 和 `npm run build`。
+- [ ] 使用中文提交信息提交，并推送到 `origin/main`。
