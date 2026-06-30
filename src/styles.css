@@ -1,0 +1,56 @@
+:root {
+  color: #1d2129;
+  font-family:
+    Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: #f5f7fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(246, 196, 83, 0.14), transparent 30%),
+    #f5f7fa;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.app-header {
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #8a6f1f;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.app-header p:last-child {
+  max-width: 620px;
+  margin: 10px 0 0;
+  color: #5c6370;
+  line-height: 1.7;
+}
