@@ -178,6 +178,42 @@ describe("goldLedger", () => {
     expect(errors).toContain("卖出克数不能超过当前持仓");
   });
 
+  it("keeps the original same-day order when validating an edited buy", () => {
+    const errors = validateTransactionDraft(
+      {
+        type: "buy",
+        date: "2026-06-01",
+        grams: 5,
+        unitPrice: 500,
+        amount: 2500,
+        note: "edited"
+      },
+      [
+        {
+          id: "buy-1",
+          type: "buy",
+          date: "2026-06-01",
+          grams: 5,
+          unitPrice: 500,
+          amount: 2500,
+          note: ""
+        },
+        {
+          id: "sell-1",
+          type: "sell",
+          date: "2026-06-01",
+          grams: 5,
+          unitPrice: 560,
+          amount: 2800,
+          note: ""
+        }
+      ],
+      "buy-1"
+    );
+
+    expect(errors).not.toContain("卖出克数不能超过当前持仓");
+  });
+
   it("sorts transactions by newest date first and then newest creation first", () => {
     const rows = sortTransactionsForDisplay([
       {

@@ -165,10 +165,12 @@ export function validateTransactionDraft(
     id: editingId ?? "__draft__",
     ...draft
   };
-  const candidateTransactions = [
-    ...existing.filter((transaction) => transaction.id !== editingId),
-    candidate
-  ];
+  const candidateTransactions =
+    editingId && existing.some((transaction) => transaction.id === editingId)
+      ? existing.map((transaction) =>
+          transaction.id === editingId ? candidate : transaction
+        )
+      : [...existing, candidate];
 
   if (summarizeHoldings(candidateTransactions).oversold) {
     errors.push("卖出克数不能超过当前持仓");
