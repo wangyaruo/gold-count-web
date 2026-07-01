@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultLedgerData } from "./ledgerDataDefaults";
-import { loadLedgerData, saveLedgerData } from "./storage";
+import {
+  loadCurrentGoldPrice,
+  loadLedgerData,
+  saveLedgerData
+} from "./storage";
 import type { LedgerData } from "../types";
 
 describe("storage API client", () => {
@@ -60,5 +64,28 @@ describe("storage API client", () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
 
     await expect(loadLedgerData()).resolves.toEqual(defaultLedgerData);
+  });
+
+  it("loads current gold price from the market price API", async () => {
+    const price = {
+      price: 870.65,
+      unit: "CNY/g",
+      source: "工商银行积存金",
+      timestamp: "2026-07-01T03:13:39+00:00"
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(price)
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(loadCurrentGoldPrice()).resolves.toEqual(price);
+    expect(fetchMock).toHaveBeenCalledWith("/api/current-gold-price");
+  });
+
+  it("returns null when current gold price loading fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+
+    await expect(loadCurrentGoldPrice()).resolves.toBeNull();
   });
 });

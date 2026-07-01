@@ -7,8 +7,11 @@
         <p>记录每一笔黄金买卖，清楚看到持仓、浮盈和已实现盈亏。</p>
       </div>
       <GoldPriceInput
+        :disabled="isLoading"
+        :loading="isPriceLoading"
         :model-value="currentGoldPrice"
-        @save="handleGoldPriceSave"
+        :source="currentGoldPriceSource"
+        @refresh="handleGoldPriceRefresh"
       />
     </section>
 
@@ -51,7 +54,11 @@ import {
   sortTransactionsForDisplay,
   validateTransactionDraft
 } from "./lib/goldLedger";
-import { loadLedgerData, saveLedgerData } from "./lib/storage";
+import {
+  loadCurrentGoldPrice,
+  loadLedgerData,
+  saveLedgerData
+} from "./lib/storage";
 import type {
   GoldTransaction,
   LedgerData,
@@ -65,6 +72,8 @@ const transactionFilter = ref<TransactionFilter>("all");
 const editingTransaction = ref<GoldTransaction | null>(null);
 const formResetToken = ref(0);
 const isLoading = ref(true);
+const isPriceLoading = ref(false);
+const currentGoldPriceSource = ref("");
 
 const summary = computed(() =>
   calculateLedger(transactions.value, currentGoldPrice.value)
@@ -113,12 +122,39 @@ async function persistLedgerData(data: LedgerData): Promise<boolean> {
 onMounted(async () => {
   applyLedgerData(await loadLedgerData());
   isLoading.value = false;
+  await refreshCurrentGoldPrice();
 });
 
-async function handleGoldPriceSave(price: number): Promise<void> {
-  if (await persistLedgerData(buildLedgerData({ currentGoldPrice: price }))) {
-    ElMessage.success("当前金价已保存");
+async function refreshCurrentGoldPrice(showSuccess = false): Promise<void> {
+  if (isPriceLoading.value) {
+    return;
   }
+
+  isPriceLoading.value = true;
+  try {
+    const currentPrice = await loadCurrentGoldPrice();
+    if (!currentPrice) {
+      ElMessage.warning("当前金价获取失败，已继续使用上次保存的金价");
+      return;
+    }
+
+    const saved = await persistLedgerData(
+      buildLedgerData({ currentGoldPrice: currentPrice.price })
+    );
+
+    if (saved) {
+      currentGoldPriceSource.value = currentPrice.source;
+      if (showSuccess) {
+        ElMessage.success("当前金价已刷新");
+      }
+    }
+  } finally {
+    isPriceLoading.value = false;
+  }
+}
+
+async function handleGoldPriceRefresh(): Promise<void> {
+  await refreshCurrentGoldPrice(true);
 }
 
 async function handleFilterChange(filter: TransactionFilter): Promise<void> {

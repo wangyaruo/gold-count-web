@@ -5,6 +5,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
 
 const API_PATH = "/api/ledger-data";
+const CURRENT_GOLD_PRICE_PATH = "/api/current-gold-price";
+const DEFAULT_MARKET_API_BASE_URL = "http://154.219.120.25:8318";
+const DEFAULT_MARKET_API_TOKEN = "change-me-local-token";
 const DEFAULT_PORT = 4173;
 const DEFAULT_HOST = "127.0.0.1";
 const MAX_BODY_SIZE = 1024 * 1024;
@@ -114,6 +117,46 @@ function sendText(res, statusCode, payload) {
   res.end(payload);
 }
 
+function normalizeCurrentGoldPrice(snapshot) {
+  const price = snapshot?.price ?? {};
+  const value = price.display_value ?? price.value;
+  const unit = price.display_unit ?? price.unit ?? "CNY/g";
+
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return {
+    price: value,
+    unit,
+    source: price.source ?? price.requested_source ?? "未知来源",
+    timestamp: price.timestamp ?? ""
+  };
+}
+
+async function fetchMarketSnapshot({
+  apiBaseUrl = process.env.GOLD_ANALYSIS_API_BASE_URL ?? DEFAULT_MARKET_API_BASE_URL,
+  apiToken = process.env.GOLD_ANALYSIS_API_TOKEN ?? DEFAULT_MARKET_API_TOKEN,
+  source = process.env.GOLD_ANALYSIS_PRICE_SOURCE ?? ""
+} = {}) {
+  const url = new URL("/api/market/snapshot", apiBaseUrl);
+  if (source) {
+    url.searchParams.set("source", source);
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${apiToken}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Market snapshot request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 function readRequestBody(req) {
   return new Promise((resolveBody, rejectBody) => {
     let body = "";
@@ -208,9 +251,31 @@ async function handleLedgerApi(req, res, dataFilePath) {
   sendJson(res, 405, { message: "Method not allowed" });
 }
 
+async function handleCurrentGoldPriceApi(req, res, marketSnapshotFetcher) {
+  if (req.method !== "GET") {
+    sendJson(res, 405, { message: "Method not allowed" });
+    return;
+  }
+
+  try {
+    const snapshot = await marketSnapshotFetcher();
+    const currentGoldPrice = normalizeCurrentGoldPrice(snapshot);
+
+    if (!currentGoldPrice) {
+      sendJson(res, 502, { message: "Invalid market price data" });
+      return;
+    }
+
+    sendJson(res, 200, currentGoldPrice);
+  } catch {
+    sendJson(res, 502, { message: "Market price fetch failed" });
+  }
+}
+
 export function createLocalServer({
   dataFilePath = resolve(process.cwd(), "mock/ledger-data.json"),
-  distDir = resolve(process.cwd(), "dist")
+  distDir = resolve(process.cwd(), "dist"),
+  marketSnapshotFetcher = fetchMarketSnapshot
 } = {}) {
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
@@ -218,6 +283,11 @@ export function createLocalServer({
     try {
       if (url.pathname === API_PATH) {
         await handleLedgerApi(req, res, dataFilePath);
+        return;
+      }
+
+      if (url.pathname === CURRENT_GOLD_PRICE_PATH) {
+        await handleCurrentGoldPriceApi(req, res, marketSnapshotFetcher);
         return;
       }
 

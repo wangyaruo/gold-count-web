@@ -7,11 +7,12 @@ import { createLocalServer } from "./local-server.mjs";
 let tempDir = "";
 let distDir = "";
 let dataFilePath = "";
+let marketSnapshotFetcher;
 let server;
 let baseUrl = "";
 
 async function startServer() {
-  server = createLocalServer({ dataFilePath, distDir });
+  server = createLocalServer({ dataFilePath, distDir, marketSnapshotFetcher });
   await new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", () => {
@@ -29,6 +30,7 @@ describe("local production server", () => {
     tempDir = await mkdtemp(join(tmpdir(), "gold-ledger-local-server-"));
     distDir = join(tempDir, "dist");
     dataFilePath = join(tempDir, "mock", "ledger-data.json");
+    marketSnapshotFetcher = undefined;
     await mkdir(distDir, { recursive: true });
     await writeFile(join(tempDir, "placeholder"), "", "utf8");
   });
@@ -111,6 +113,32 @@ describe("local production server", () => {
       currentGoldPrice: 0,
       transactionFilter: "all",
       transactions: []
+    });
+  });
+
+  it("serves the current gold price from the market snapshot source", async () => {
+    await writeFile(join(distDir, "index.html"), "<h1>App</h1>", {
+      encoding: "utf8",
+      flag: "w"
+    });
+    marketSnapshotFetcher = async () => ({
+      price: {
+        display_value: 870.65,
+        display_unit: "CNY/g",
+        source: "工商银行积存金",
+        timestamp: "2026-07-01T03:13:39+00:00"
+      }
+    });
+    await startServer();
+
+    const response = await fetch(`${baseUrl}/api/current-gold-price`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      price: 870.65,
+      unit: "CNY/g",
+      source: "工商银行积存金",
+      timestamp: "2026-07-01T03:13:39+00:00"
     });
   });
 });

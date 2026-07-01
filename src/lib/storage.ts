@@ -1,7 +1,8 @@
 import { defaultLedgerData } from "./ledgerDataDefaults";
-import type { LedgerData } from "../types";
+import type { CurrentGoldPrice, LedgerData } from "../types";
 
 const LEDGER_DATA_ENDPOINT = "/api/ledger-data";
+const CURRENT_GOLD_PRICE_ENDPOINT = "/api/current-gold-price";
 
 export async function loadLedgerData(): Promise<LedgerData> {
   try {
@@ -30,4 +31,17 @@ export async function saveLedgerData(data: LedgerData): Promise<LedgerData> {
   }
 
   return (await response.json()) as LedgerData;
+}
+
+export async function loadCurrentGoldPrice(): Promise<CurrentGoldPrice | null> {
+  try {
+    const response = await fetch(CURRENT_GOLD_PRICE_ENDPOINT);
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as CurrentGoldPrice;
+  } catch {
+    return null;
+  }
 }

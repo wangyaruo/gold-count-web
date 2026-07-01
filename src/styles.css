@@ -87,22 +87,55 @@ textarea {
   background: rgba(255, 255, 255, 0.88);
 }
 
+.price-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.price-title-line {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .field-label {
   display: block;
-  margin-bottom: 8px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
 }
 
-.price-control {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
+.price-source-badge {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
-.price-input {
-  width: 100%;
+.current-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 38px;
+}
+
+.current-price-line strong {
+  color: var(--text);
+  font-size: 30px;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.current-price-line span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .summary-grid {
@@ -268,8 +301,7 @@ textarea {
   }
 
   .summary-grid,
-  .form-row,
-  .price-control {
+  .form-row {
     grid-template-columns: 1fr;
   }
 

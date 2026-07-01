@@ -20,6 +20,13 @@ export interface LedgerData {
   transactions: GoldTransaction[];
 }
 
+export interface CurrentGoldPrice {
+  price: number;
+  unit: string;
+  source: string;
+  timestamp: string;
+}
+
 export interface LedgerSummary {
   holdingGrams: number;
   remainingCost: number;
