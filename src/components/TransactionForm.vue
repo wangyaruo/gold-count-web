@@ -52,6 +52,7 @@
             :precision="4"
             class="full-width"
             placeholder="克"
+            @update:model-value="handleLinkedFieldUpdate('grams', $event)"
           />
         </el-form-item>
 
@@ -63,18 +64,20 @@
             :precision="2"
             class="full-width"
             placeholder="元/克"
+            @update:model-value="handleLinkedFieldUpdate('unitPrice', $event)"
           />
         </el-form-item>
       </div>
 
-      <el-form-item label="费用" prop="fee">
+      <el-form-item label="费用" prop="amount">
         <el-input-number
-          v-model="form.fee"
+          v-model="form.amount"
           :controls="false"
           :min="0"
           :precision="2"
           class="full-width"
-          placeholder="手续费、工费或溢价"
+          placeholder="本笔总费用"
+          @update:model-value="handleLinkedFieldUpdate('amount', $event)"
         />
       </el-form-item>
 
@@ -104,6 +107,10 @@
 import { Close, Edit, Plus } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { reactive, ref, watch } from "vue";
+import {
+  deriveLinkedTransactionFields,
+  type LinkedTransactionField
+} from "../lib/transactionFields";
 import type { GoldTransaction, TransactionDraft } from "../types";
 
 const props = defineProps<{
@@ -122,12 +129,13 @@ const emptyForm = (): TransactionDraft => ({
   date: new Date().toISOString().slice(0, 10),
   grams: 0,
   unitPrice: 0,
-  fee: 0,
+  amount: 0,
   note: ""
 });
 
 const formRef = ref<FormInstance>();
 const form = reactive<TransactionDraft>(emptyForm());
+const isDeriving = ref(false);
 
 const rules: FormRules<TransactionDraft> = {
   type: [{ required: true, message: "请选择交易类型", trigger: "change" }],
@@ -148,7 +156,7 @@ const rules: FormRules<TransactionDraft> = {
       trigger: "blur"
     }
   ],
-  fee: [
+  amount: [
     {
       type: "number",
       min: 0,
@@ -160,6 +168,45 @@ const rules: FormRules<TransactionDraft> = {
 
 function assignForm(nextForm: TransactionDraft): void {
   Object.assign(form, nextForm);
+}
+
+function setLinkedField(field: LinkedTransactionField, value: number): void {
+  if (field === "grams") {
+    form.grams = value;
+  }
+
+  if (field === "amount") {
+    form.amount = value;
+  }
+
+  if (field === "unitPrice") {
+    form.unitPrice = value;
+  }
+}
+
+function handleLinkedFieldUpdate(
+  field: LinkedTransactionField,
+  value: number | undefined
+): void {
+  if (isDeriving.value) {
+    return;
+  }
+
+  isDeriving.value = true;
+  setLinkedField(field, value ?? 0);
+  const derivedValues = deriveLinkedTransactionFields(
+    {
+      grams: form.grams ?? 0,
+      amount: form.amount ?? 0,
+      unitPrice: form.unitPrice ?? 0
+    },
+    field
+  );
+
+  form.grams = derivedValues.grams;
+  form.amount = derivedValues.amount;
+  form.unitPrice = derivedValues.unitPrice;
+  isDeriving.value = false;
 }
 
 watch(
@@ -194,7 +241,7 @@ async function submitForm(): Promise<void> {
     date: form.date,
     grams: form.grams ?? 0,
     unitPrice: form.unitPrice ?? 0,
-    fee: form.fee ?? 0,
+    amount: form.amount ?? 0,
     note: form.note.trim()
   });
 }

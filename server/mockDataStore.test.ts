@@ -46,7 +46,7 @@ describe("mockDataStore", () => {
           date: "2026-06-01",
           grams: 10,
           unitPrice: 520,
-          fee: 30,
+          amount: 5200,
           note: "金条"
         }
       ]
@@ -57,5 +57,43 @@ describe("mockDataStore", () => {
     const raw = await readFile(dataFile, "utf8");
     expect(raw).toContain("\n  \"currentGoldPrice\": 588.5");
     await expect(readLedgerDataFile(dataFile)).resolves.toEqual(nextData);
+  });
+
+  it("normalizes legacy fee fields to amount", async () => {
+    await writeFile(
+      dataFile,
+      JSON.stringify({
+        currentGoldPrice: 588.5,
+        transactionFilter: "all",
+        transactions: [
+          {
+            id: "legacy-1",
+            type: "buy",
+            date: "2026-06-01",
+            grams: 10,
+            unitPrice: 520,
+            fee: 5200,
+            note: "旧数据"
+          }
+        ]
+      }),
+      "utf8"
+    );
+
+    await expect(readLedgerDataFile(dataFile)).resolves.toEqual({
+      currentGoldPrice: 588.5,
+      transactionFilter: "all",
+      transactions: [
+        {
+          id: "legacy-1",
+          type: "buy",
+          date: "2026-06-01",
+          grams: 10,
+          unitPrice: 520,
+          amount: 5200,
+          note: "旧数据"
+        }
+      ]
+    });
   });
 });

@@ -6,7 +6,7 @@ import {
 } from "./goldLedger";
 
 describe("goldLedger", () => {
-  it("calculates buy-only holdings with fees", () => {
+  it("calculates buy-only holdings from total amount", () => {
     const summary = calculateLedger(
       [
         {
@@ -15,7 +15,7 @@ describe("goldLedger", () => {
           date: "2026-06-01",
           grams: 10,
           unitPrice: 520,
-          fee: 30,
+          amount: 5200,
           note: "first"
         }
       ],
@@ -23,11 +23,11 @@ describe("goldLedger", () => {
     );
 
     expect(summary.holdingGrams).toBe(10);
-    expect(summary.remainingCost).toBe(5230);
+    expect(summary.remainingCost).toBe(5200);
     expect(summary.currentValue).toBe(5600);
-    expect(summary.unrealizedProfitLoss).toBe(370);
+    expect(summary.unrealizedProfitLoss).toBe(400);
     expect(summary.realizedProfitLoss).toBe(0);
-    expect(summary.totalProfitLoss).toBe(370);
+    expect(summary.totalProfitLoss).toBe(400);
   });
 
   it("matches sells against oldest buy lots first", () => {
@@ -39,7 +39,7 @@ describe("goldLedger", () => {
           date: "2026-06-01",
           grams: 10,
           unitPrice: 500,
-          fee: 0,
+          amount: 5000,
           note: ""
         },
         {
@@ -48,7 +48,7 @@ describe("goldLedger", () => {
           date: "2026-06-02",
           grams: 10,
           unitPrice: 550,
-          fee: 0,
+          amount: 5500,
           note: ""
         },
         {
@@ -57,7 +57,7 @@ describe("goldLedger", () => {
           date: "2026-06-03",
           grams: 12,
           unitPrice: 600,
-          fee: 0,
+          amount: 7200,
           note: ""
         }
       ],
@@ -69,7 +69,7 @@ describe("goldLedger", () => {
     expect(summary.remainingCost).toBe(4400);
   });
 
-  it("applies sell fees to realized profit", () => {
+  it("uses total sell amount for realized profit", () => {
     const summary = calculateLedger(
       [
         {
@@ -78,7 +78,7 @@ describe("goldLedger", () => {
           date: "2026-06-01",
           grams: 5,
           unitPrice: 500,
-          fee: 25,
+          amount: 2525,
           note: ""
         },
         {
@@ -87,7 +87,7 @@ describe("goldLedger", () => {
           date: "2026-06-02",
           grams: 5,
           unitPrice: 560,
-          fee: 10,
+          amount: 2790,
           note: ""
         }
       ],
@@ -108,7 +108,7 @@ describe("goldLedger", () => {
           date: "2026-06-01",
           grams: 10,
           unitPrice: 500,
-          fee: 100,
+          amount: 5100,
           note: ""
         },
         {
@@ -117,7 +117,7 @@ describe("goldLedger", () => {
           date: "2026-06-02",
           grams: 4,
           unitPrice: 550,
-          fee: 0,
+          amount: 2200,
           note: ""
         }
       ],
@@ -139,7 +139,7 @@ describe("goldLedger", () => {
           date: "2026-06-01",
           grams: 3,
           unitPrice: 600,
-          fee: 30,
+          amount: 1830,
           note: ""
         }
       ],
@@ -159,7 +159,7 @@ describe("goldLedger", () => {
         date: "2026-06-02",
         grams: 6,
         unitPrice: 560,
-        fee: 0,
+        amount: 3360,
         note: ""
       },
       [
@@ -169,7 +169,7 @@ describe("goldLedger", () => {
           date: "2026-06-01",
           grams: 5,
           unitPrice: 500,
-          fee: 0,
+          amount: 2500,
           note: ""
         }
       ]
@@ -186,7 +186,7 @@ describe("goldLedger", () => {
         date: "2026-06-01",
         grams: 1,
         unitPrice: 500,
-        fee: 0,
+        amount: 500,
         note: ""
       },
       {
@@ -195,7 +195,7 @@ describe("goldLedger", () => {
         date: "2026-06-02",
         grams: 1,
         unitPrice: 520,
-        fee: 0,
+        amount: 520,
         note: ""
       },
       {
@@ -204,7 +204,7 @@ describe("goldLedger", () => {
         date: "2026-06-02",
         grams: 1,
         unitPrice: 510,
-        fee: 0,
+        amount: 510,
         note: ""
       }
     ]);

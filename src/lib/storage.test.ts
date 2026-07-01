@@ -19,7 +19,7 @@ describe("storage API client", () => {
           date: "2026-06-01",
           grams: 10,
           unitPrice: 520,
-          fee: 30,
+          amount: 5200,
           note: "金条"
         }
       ]

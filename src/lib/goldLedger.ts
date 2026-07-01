@@ -47,7 +47,7 @@ function summarizeHoldings(transactions: GoldTransaction[]): {
 
   for (const transaction of sortForCalculation(transactions)) {
     if (transaction.type === "buy") {
-      const cost = transaction.grams * transaction.unitPrice + transaction.fee;
+      const cost = transaction.amount;
       totalBuyCost += cost;
       lots.push({
         remainingGrams: transaction.grams,
@@ -58,7 +58,7 @@ function summarizeHoldings(transactions: GoldTransaction[]): {
 
     let gramsToSell = transaction.grams;
     let matchedCost = 0;
-    const sellIncome = transaction.grams * transaction.unitPrice - transaction.fee;
+    const sellIncome = transaction.amount;
     totalSellIncome += sellIncome;
 
     for (const lot of lots) {
@@ -153,7 +153,7 @@ export function validateTransactionDraft(
     errors.push("单价必须大于 0");
   }
 
-  if (!Number.isFinite(draft.fee) || draft.fee < 0) {
+  if (!Number.isFinite(draft.amount) || draft.amount < 0) {
     errors.push("费用不能小于 0");
   }
 

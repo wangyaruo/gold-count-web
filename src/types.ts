@@ -6,7 +6,7 @@ export interface GoldTransaction {
   date: string;
   grams: number;
   unitPrice: number;
-  fee: number;
+  amount: number;
   note: string;
 }
 

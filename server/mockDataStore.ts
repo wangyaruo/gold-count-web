@@ -5,9 +5,9 @@ import type { LedgerData } from "../src/types";
 
 export { defaultLedgerData };
 
-function isLedgerData(value: unknown): value is LedgerData {
+function normalizeLedgerData(value: unknown): LedgerData | null {
   if (!value || typeof value !== "object") {
-    return false;
+    return null;
   }
 
   const candidate = value as Partial<LedgerData>;
@@ -15,39 +15,63 @@ function isLedgerData(value: unknown): value is LedgerData {
     candidate.transactionFilter === "all" ||
     candidate.transactionFilter === "buy" ||
     candidate.transactionFilter === "sell";
-  const validTransactions =
-    Array.isArray(candidate.transactions) &&
-    candidate.transactions.every((transaction) => {
-      if (!transaction || typeof transaction !== "object") {
-        return false;
-      }
 
-      const item = transaction as unknown as Record<string, unknown>;
-      return (
-        typeof item.id === "string" &&
-        (item.type === "buy" || item.type === "sell") &&
-        typeof item.date === "string" &&
-        typeof item.grams === "number" &&
-        typeof item.unitPrice === "number" &&
-        typeof item.fee === "number" &&
-        typeof item.note === "string"
-      );
-    });
+  if (
+    typeof candidate.currentGoldPrice !== "number" ||
+    !Number.isFinite(candidate.currentGoldPrice) ||
+    candidate.currentGoldPrice < 0 ||
+    !validFilter ||
+    !Array.isArray(candidate.transactions)
+  ) {
+    return null;
+  }
 
-  return (
-    typeof candidate.currentGoldPrice === "number" &&
-    Number.isFinite(candidate.currentGoldPrice) &&
-    candidate.currentGoldPrice >= 0 &&
-    validFilter &&
-    validTransactions
-  );
+  const transactions = candidate.transactions.map((transaction) => {
+    if (!transaction || typeof transaction !== "object") {
+      return null;
+    }
+
+    const item = transaction as unknown as Record<string, unknown>;
+    const amount = item.amount ?? item.fee;
+    if (
+      typeof item.id !== "string" ||
+      (item.type !== "buy" && item.type !== "sell") ||
+      typeof item.date !== "string" ||
+      typeof item.grams !== "number" ||
+      typeof item.unitPrice !== "number" ||
+      typeof amount !== "number" ||
+      typeof item.note !== "string"
+    ) {
+      return null;
+    }
+
+    return {
+      id: item.id,
+      type: item.type,
+      date: item.date,
+      grams: item.grams,
+      unitPrice: item.unitPrice,
+      amount,
+      note: item.note
+    };
+  });
+
+  if (transactions.some((transaction) => transaction === null)) {
+    return null;
+  }
+
+  return {
+    currentGoldPrice: candidate.currentGoldPrice,
+    transactionFilter: candidate.transactionFilter,
+    transactions: transactions as LedgerData["transactions"]
+  };
 }
 
 export async function readLedgerDataFile(filePath: string): Promise<LedgerData> {
   try {
     const raw = await readFile(filePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
-    return isLedgerData(parsed) ? parsed : defaultLedgerData;
+    return normalizeLedgerData(parsed) ?? defaultLedgerData;
   } catch {
     return defaultLedgerData;
   }
@@ -57,7 +81,7 @@ export async function writeLedgerDataFile(
   filePath: string,
   data: LedgerData
 ): Promise<LedgerData> {
-  const nextData = isLedgerData(data) ? data : defaultLedgerData;
+  const nextData = normalizeLedgerData(data) ?? defaultLedgerData;
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(nextData, null, 2)}\n`, "utf8");
   return nextData;

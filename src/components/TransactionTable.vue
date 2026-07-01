@@ -27,10 +27,7 @@
           <template #default="{ row }">{{ formatMoney(row.unitPrice) }}</template>
         </el-table-column>
         <el-table-column label="费用" min-width="100" align="right">
-          <template #default="{ row }">{{ formatMoney(row.fee) }}</template>
-        </el-table-column>
-        <el-table-column label="金额" min-width="120" align="right">
-          <template #default="{ row }">{{ formatTransactionAmount(row) }}</template>
+          <template #default="{ row }">{{ formatMoney(row.amount) }}</template>
         </el-table-column>
         <el-table-column label="备注" prop="note" min-width="150" />
         <el-table-column label="操作" fixed="right" width="132">
@@ -103,12 +100,4 @@ function formatGrams(value: number): string {
   })} g`;
 }
 
-function formatTransactionAmount(transaction: GoldTransaction): string {
-  const gross = transaction.grams * transaction.unitPrice;
-  const amount =
-    transaction.type === "buy"
-      ? gross + transaction.fee
-      : gross - transaction.fee;
-  return formatMoney(amount);
-}
 </script>
