@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "start": "npm run build && node scripts/local-server.mjs",
+    "serve:local": "node scripts/local-server.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
