@@ -42,7 +42,7 @@ textarea {
 
 .app-header {
   display: grid;
-  grid-template-columns: 1fr minmax(280px, 360px);
+  grid-template-columns: 1fr minmax(512px, 560px);
   gap: 20px;
   align-items: start;
   margin-bottom: 20px;
@@ -83,8 +83,26 @@ textarea {
   padding: 18px;
 }
 
-.gold-price-card {
+.price-cards-row {
+  display: grid;
+  grid-template-columns: minmax(132px, 140px) minmax(280px, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.gold-price-card,
+.bank-sell-price-card {
   background: rgba(255, 255, 255, 0.88);
+}
+
+.bank-sell-price-card {
+  background: var(--surface);
+  border-color: rgba(185, 137, 0, 0.28);
+}
+
+.bank-sell-price-card .el-card__body {
+  min-height: 100%;
+  padding: 14px 12px;
 }
 
 .price-card-header {
@@ -118,40 +136,20 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.price-values-row {
+.bank-sell-price-value,
+.current-price-line {
   display: flex;
-  align-items: stretch;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.bank-sell-price-box {
-  flex: 0 1 132px;
-  min-width: 124px;
-  padding: 8px 10px;
-  border: 1px solid rgba(185, 137, 0, 0.28);
-  border-radius: 8px;
-  background: var(--gold-soft);
-}
-
-.bank-sell-price-label {
-  display: block;
-  color: var(--gold);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.35;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .bank-sell-price-value {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  margin-top: 3px;
+  margin-top: 10px;
 }
 
 .bank-sell-price-value strong {
   color: var(--text);
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 850;
   line-height: 1.15;
 }
@@ -162,12 +160,16 @@ textarea {
   font-weight: 700;
 }
 
+.bank-sell-price-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .current-price-line {
-  display: flex;
-  flex: 1 1 130px;
-  align-items: center;
-  gap: 8px;
-  min-height: 54px;
+  min-height: 38px;
   min-width: 0;
 }
 
@@ -347,6 +349,7 @@ textarea {
   }
 
   .summary-grid,
+  .price-cards-row,
   .form-row {
     grid-template-columns: 1fr;
   }
