@@ -118,11 +118,57 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.current-price-line {
+.price-values-row {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bank-sell-price-box {
+  flex: 0 1 132px;
+  min-width: 124px;
+  padding: 8px 10px;
+  border: 1px solid rgba(185, 137, 0, 0.28);
+  border-radius: 8px;
+  background: var(--gold-soft);
+}
+
+.bank-sell-price-label {
+  display: block;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.bank-sell-price-value {
   display: flex;
   align-items: baseline;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.bank-sell-price-value strong {
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.bank-sell-price-value span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.current-price-line {
+  display: flex;
+  flex: 1 1 130px;
+  align-items: center;
   gap: 8px;
-  min-height: 38px;
+  min-height: 54px;
+  min-width: 0;
 }
 
 .current-price-line strong {

@@ -1,5 +1,5 @@
 {
-  "currentGoldPrice": 875.66,
+  "currentGoldPrice": 876.44,
   "transactionFilter": "all",
   "transactions": [
     {
@@ -126,6 +126,33 @@
       "grams": 1,
       "unitPrice": 885.47,
       "amount": 885.47,
+      "note": "京东"
+    },
+    {
+      "id": "593cd40b-5112-4617-8587-29d95f60e174",
+      "type": "buy",
+      "date": "2026-07-14",
+      "grams": 1,
+      "unitPrice": 872.42,
+      "amount": 872.42,
+      "note": "京东"
+    },
+    {
+      "id": "a2d34268-1690-4e38-8e44-f438180efc54",
+      "type": "buy",
+      "date": "2026-07-14",
+      "grams": 1,
+      "unitPrice": 872.54,
+      "amount": 872.54,
+      "note": "京东"
+    },
+    {
+      "id": "22e4b3b1-e0b5-4b15-b2d0-cea436760fca",
+      "type": "buy",
+      "date": "2026-07-13",
+      "grams": 2,
+      "unitPrice": 876.49,
+      "amount": 1752.98,
       "note": "京东"
     }
   ]

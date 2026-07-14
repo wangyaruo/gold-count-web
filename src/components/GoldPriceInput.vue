@@ -19,17 +19,29 @@
       </el-button>
     </div>
 
-    <div class="current-price-line">
-      <strong>{{ formatPrice(modelValue) }}</strong>
-      <span>元/克</span>
+    <div class="price-values-row">
+      <div class="bank-sell-price-box">
+        <span class="bank-sell-price-label">当前卖出价</span>
+        <div class="bank-sell-price-value">
+          <strong>{{ formatPrice(bankSellPrice) }}</strong>
+          <span>元/克</span>
+        </div>
+      </div>
+
+      <div class="current-price-line">
+        <strong>{{ formatPrice(modelValue) }}</strong>
+        <span>元/克</span>
+      </div>
     </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
 import { Refresh } from "@element-plus/icons-vue";
+import { computed } from "vue";
+import { calculateBankSellPrice } from "../lib/goldLedger";
 
-defineProps<{
+const props = defineProps<{
   disabled?: boolean;
   loading?: boolean;
   modelValue: number;
@@ -39,6 +51,8 @@ defineProps<{
 const emit = defineEmits<{
   refresh: [];
 }>();
+
+const bankSellPrice = computed(() => calculateBankSellPrice(props.modelValue));
 
 function formatPrice(price: number): string {
   if (!Number.isFinite(price) || price <= 0) {

@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  calculateBankSellPrice,
   calculateLedger,
   sortTransactionsForDisplay,
   validateTransactionDraft
 } from "./goldLedger";
 
 describe("goldLedger", () => {
+  it("calculates bank sell price from current gold price", () => {
+    expect(calculateBankSellPrice(560)).toBe(556.2);
+    expect(calculateBankSellPrice(3)).toBe(0);
+  });
+
   it("calculates buy-only holdings from total amount", () => {
     const summary = calculateLedger(
       [
