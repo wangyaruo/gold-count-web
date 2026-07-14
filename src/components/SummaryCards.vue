@@ -65,9 +65,9 @@ const summaryItems = computed(() => [
     tone: ""
   },
   {
-    label: "当前估值",
+    label: "可卖估值",
     value: formatMoney(props.summary.currentValue),
-    hint: "当前金价 × 持仓克数",
+    hint: "银行卖出价 × 持仓克数",
     tone: ""
   },
   {

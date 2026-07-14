@@ -10,6 +10,7 @@ interface BuyLot {
 }
 
 const EPSILON = 0.000001;
+const BANK_SELL_PRICE_DISCOUNT = 3.8;
 
 function roundCurrency(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -17,6 +18,10 @@ function roundCurrency(value: number): number {
 
 function roundGrams(value: number): number {
   return Math.round((value + Number.EPSILON) * 10000) / 10000;
+}
+
+function calculateBankSellPrice(currentGoldPrice: number): number {
+  return Math.max(currentGoldPrice - BANK_SELL_PRICE_DISCOUNT, 0);
 }
 
 function sortForCalculation(
@@ -108,8 +113,9 @@ export function calculateLedger(
   currentGoldPrice: number
 ): LedgerSummary {
   const holdings = summarizeHoldings(transactions);
+  const bankSellPrice = calculateBankSellPrice(currentGoldPrice);
   const currentValue = roundCurrency(
-    holdings.holdingGrams * Math.max(currentGoldPrice, 0)
+    holdings.holdingGrams * bankSellPrice
   );
   const unrealizedProfitLoss = roundCurrency(
     currentValue - holdings.remainingCost

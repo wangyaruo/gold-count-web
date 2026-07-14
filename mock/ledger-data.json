@@ -1,5 +1,5 @@
 {
-  "currentGoldPrice": 869.73,
+  "currentGoldPrice": 875.66,
   "transactionFilter": "all",
   "transactions": [
     {
@@ -32,10 +32,100 @@
     {
       "id": "cba52147-18c2-4e6a-b83c-a2ef97bd10a3",
       "type": "sell",
-      "date": "2026-07-01",
+      "date": "2026-06-30",
       "grams": 2,
       "unitPrice": 881.44,
       "amount": 1762.88,
+      "note": "京东"
+    },
+    {
+      "id": "2645ba3e-c1a9-4b79-9c03-e8c086ddfcb2",
+      "type": "buy",
+      "date": "2026-07-01",
+      "grams": 2,
+      "unitPrice": 866.46,
+      "amount": 1732.92,
+      "note": "京东"
+    },
+    {
+      "id": "e23ffe9b-c0bc-42ea-8856-56e630594f89",
+      "type": "sell",
+      "date": "2026-07-01",
+      "grams": 2,
+      "unitPrice": 875.54,
+      "amount": 1751.08,
+      "note": "京东"
+    },
+    {
+      "id": "499dabbf-c393-4f4d-bcc5-7a0235ad7511",
+      "type": "buy",
+      "date": "2026-07-03",
+      "grams": 1,
+      "unitPrice": 909.38,
+      "amount": 909.38,
+      "note": "京东"
+    },
+    {
+      "id": "e00761f6-b003-482d-be9a-76e2d59e8d20",
+      "type": "buy",
+      "date": "2026-07-06",
+      "grams": 2,
+      "unitPrice": 905.64,
+      "amount": 1811.28,
+      "note": "京东"
+    },
+    {
+      "id": "019b7bd0-ba3c-4bdb-82c0-4ab09acaab2d",
+      "type": "buy",
+      "date": "2026-07-08",
+      "grams": 5,
+      "unitPrice": 890.56,
+      "amount": 4452.8,
+      "note": "京东"
+    },
+    {
+      "id": "97ecad5c-5f56-4457-b16f-d10ba055ba54",
+      "type": "buy",
+      "date": "2026-07-08",
+      "grams": 1,
+      "unitPrice": 885.35,
+      "amount": 885.35,
+      "note": "京东"
+    },
+    {
+      "id": "207ffe3e-87cb-4206-bafa-73bcfff5df6a",
+      "type": "sell",
+      "date": "2026-07-09",
+      "grams": 9,
+      "unitPrice": 897.89,
+      "amount": 8081.01,
+      "note": "京东"
+    },
+    {
+      "id": "fc959c54-daab-47de-96cd-3ac14ff04169",
+      "type": "buy",
+      "date": "2026-07-13",
+      "grams": 1,
+      "unitPrice": 886.26,
+      "amount": 886.26,
+      "note": "京东"
+    },
+    {
+      "id": "263473d5-2214-4939-bda8-d19e71ace0db",
+      "type": "buy",
+      "date": "2026-07-10",
+      "grams": 2,
+      "unitPrice": 891.64,
+      "amount": 1783.28,
+      "note": "京东"
+    },
+    {
+      "id": "3e665020-849a-4e80-9986-18cb8f3b191d",
+      "type": "buy",
+      "date": "2026-07-13",
+      "grams": 1,
+      "unitPrice": 885.47,
+      "amount": 885.47,
       "note": "京东"
     }
   ]

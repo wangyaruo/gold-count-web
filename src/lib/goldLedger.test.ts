@@ -24,10 +24,10 @@ describe("goldLedger", () => {
 
     expect(summary.holdingGrams).toBe(10);
     expect(summary.remainingCost).toBe(5200);
-    expect(summary.currentValue).toBe(5600);
-    expect(summary.unrealizedProfitLoss).toBe(400);
+    expect(summary.currentValue).toBe(5562);
+    expect(summary.unrealizedProfitLoss).toBe(362);
     expect(summary.realizedProfitLoss).toBe(0);
-    expect(summary.totalProfitLoss).toBe(400);
+    expect(summary.totalProfitLoss).toBe(362);
   });
 
   it("matches sells against oldest buy lots first", () => {
@@ -127,10 +127,10 @@ describe("goldLedger", () => {
     expect(summary.realizedProfitLoss).toBe(160);
     expect(summary.holdingGrams).toBe(6);
     expect(summary.remainingCost).toBe(3060);
-    expect(summary.unrealizedProfitLoss).toBe(180);
+    expect(summary.unrealizedProfitLoss).toBe(157.2);
   });
 
-  it("calculates unrealized and total profit from current price", () => {
+  it("calculates unrealized and total profit from bank sell price", () => {
     const summary = calculateLedger(
       [
         {
@@ -146,10 +146,10 @@ describe("goldLedger", () => {
       580
     );
 
-    expect(summary.currentValue).toBe(1740);
+    expect(summary.currentValue).toBe(1728.6);
     expect(summary.remainingCost).toBe(1830);
-    expect(summary.unrealizedProfitLoss).toBe(-90);
-    expect(summary.totalProfitLoss).toBe(-90);
+    expect(summary.unrealizedProfitLoss).toBe(-101.4);
+    expect(summary.totalProfitLoss).toBe(-101.4);
   });
 
   it("reports oversell validation errors", () => {
