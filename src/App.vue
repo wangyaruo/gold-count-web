@@ -29,6 +29,7 @@
       <div class="ledger-panel">
         <TransactionTable
           v-if="transactions.length > 0"
+          :current-profit-loss-by-transaction="currentProfitLossByTransaction"
           :filter="transactionFilter"
           :transactions="filteredTransactions"
           @delete="handleTransactionDelete"
@@ -51,6 +52,7 @@ import TransactionForm from "./components/TransactionForm.vue";
 import TransactionTable from "./components/TransactionTable.vue";
 import {
   calculateLedger,
+  calculateTransactionHoldingProfitLoss,
   sortTransactionsForDisplay,
   validateTransactionDraft
 } from "./lib/goldLedger";
@@ -77,6 +79,13 @@ const currentGoldPriceSource = ref("");
 
 const summary = computed(() =>
   calculateLedger(transactions.value, currentGoldPrice.value)
+);
+
+const currentProfitLossByTransaction = computed(() =>
+  calculateTransactionHoldingProfitLoss(
+    transactions.value,
+    currentGoldPrice.value
+  )
 );
 
 const filteredTransactions = computed(() => {

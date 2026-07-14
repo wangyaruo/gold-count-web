@@ -29,7 +29,31 @@
         <el-table-column label="费用" min-width="100" align="right">
           <template #default="{ row }">{{ formatMoney(row.amount) }}</template>
         </el-table-column>
-        <el-table-column label="备注" prop="note" min-width="150" />
+        <el-table-column label="备注" width="96">
+          <template #default="{ row }">
+            <div class="transaction-note-scroll" :title="row.note">
+              {{ row.note }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="当前盈亏" min-width="118" align="right">
+          <template #default="{ row }">
+            <span
+              v-if="currentProfitLossByTransaction[row.id]"
+              :class="[
+                'transaction-profit-loss',
+                tone(currentProfitLossByTransaction[row.id].profitLoss)
+              ]"
+            >
+              {{
+                formatSignedMoney(
+                  currentProfitLossByTransaction[row.id].profitLoss
+                )
+              }}
+            </span>
+            <span v-else aria-hidden="true"></span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" fixed="right" width="132">
           <template #default="{ row }">
             <div class="table-actions">
@@ -60,12 +84,14 @@
 <script setup lang="ts">
 import { Delete, Edit } from "@element-plus/icons-vue";
 import { computed } from "vue";
+import type { TransactionHoldingProfitLoss } from "../lib/goldLedger";
 import type {
   GoldTransaction,
   TransactionFilter
 } from "../types";
 
 const props = defineProps<{
+  currentProfitLossByTransaction: Record<string, TransactionHoldingProfitLoss>;
   transactions: GoldTransaction[];
   filter: TransactionFilter;
 }>();
@@ -94,10 +120,27 @@ function formatMoney(value: number): string {
   })}`;
 }
 
+function formatSignedMoney(value: number): string {
+  const prefix = value > 0 ? "+" : "";
+  return `${prefix}${formatMoney(value)}`;
+}
+
 function formatGrams(value: number): string {
   return `${value.toLocaleString("zh-CN", {
     maximumFractionDigits: 4
   })} g`;
+}
+
+function tone(value: number): string {
+  if (value > 0) {
+    return "is-profit";
+  }
+
+  if (value < 0) {
+    return "is-loss";
+  }
+
+  return "";
 }
 
 </script>

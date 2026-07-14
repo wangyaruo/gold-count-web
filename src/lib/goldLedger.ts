@@ -5,8 +5,15 @@ import type {
 } from "../types";
 
 interface BuyLot {
+  transactionId: string;
+  unitPrice: number;
   remainingGrams: number;
   remainingCost: number;
+}
+
+export interface TransactionHoldingProfitLoss {
+  remainingGrams: number;
+  profitLoss: number;
 }
 
 const EPSILON = 0.000001;
@@ -43,6 +50,7 @@ function summarizeHoldings(transactions: GoldTransaction[]): {
   totalBuyCost: number;
   totalSellIncome: number;
   oversold: boolean;
+  remainingLots: BuyLot[];
 } {
   const lots: BuyLot[] = [];
   let realizedProfitLoss = 0;
@@ -55,6 +63,8 @@ function summarizeHoldings(transactions: GoldTransaction[]): {
       const cost = transaction.amount;
       totalBuyCost += cost;
       lots.push({
+        transactionId: transaction.id,
+        unitPrice: transaction.unitPrice,
         remainingGrams: transaction.grams,
         remainingCost: cost
       });
@@ -104,7 +114,8 @@ function summarizeHoldings(transactions: GoldTransaction[]): {
     realizedProfitLoss: roundCurrency(realizedProfitLoss),
     totalBuyCost: roundCurrency(totalBuyCost),
     totalSellIncome: roundCurrency(totalSellIncome),
-    oversold
+    oversold,
+    remainingLots: lots.filter((lot) => lot.remainingGrams > EPSILON)
   };
 }
 
@@ -134,6 +145,35 @@ export function calculateLedger(
     totalBuyCost: holdings.totalBuyCost,
     totalSellIncome: holdings.totalSellIncome
   };
+}
+
+export function calculateTransactionHoldingProfitLoss(
+  transactions: GoldTransaction[],
+  currentGoldPrice: number
+): Record<string, TransactionHoldingProfitLoss> {
+  const { remainingLots } = summarizeHoldings(transactions);
+  const bankSellPrice = calculateBankSellPrice(currentGoldPrice);
+
+  return remainingLots.reduce<Record<string, TransactionHoldingProfitLoss>>(
+    (result, lot) => {
+      const existing = result[lot.transactionId];
+      const remainingGrams = roundGrams(
+        (existing?.remainingGrams ?? 0) + lot.remainingGrams
+      );
+      const profitLoss = roundCurrency(
+        (existing?.profitLoss ?? 0) +
+          lot.remainingGrams * (bankSellPrice - lot.unitPrice)
+      );
+
+      result[lot.transactionId] = {
+        remainingGrams,
+        profitLoss
+      };
+
+      return result;
+    },
+    {}
+  );
 }
 
 export function validateTransactionDraft(

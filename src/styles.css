@@ -295,7 +295,36 @@ textarea {
 }
 
 .transaction-table {
-  min-width: 820px;
+  min-width: 886px;
+}
+
+.transaction-note-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+.transaction-note-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.transaction-note-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.transaction-profit-loss {
+  font-weight: 800;
+}
+
+.transaction-profit-loss.is-profit {
+  color: var(--green);
+}
+
+.transaction-profit-loss.is-loss {
+  color: var(--red);
 }
 
 .table-actions {

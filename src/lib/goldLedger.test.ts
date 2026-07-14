@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calculateBankSellPrice,
   calculateLedger,
+  calculateTransactionHoldingProfitLoss,
   sortTransactionsForDisplay,
   validateTransactionDraft
 } from "./goldLedger";
@@ -156,6 +157,51 @@ describe("goldLedger", () => {
     expect(summary.remainingCost).toBe(1830);
     expect(summary.unrealizedProfitLoss).toBe(-101.4);
     expect(summary.totalProfitLoss).toBe(-101.4);
+  });
+
+  it("calculates current profit and loss only for remaining buy holdings", () => {
+    const profitLossByTransaction = calculateTransactionHoldingProfitLoss(
+      [
+        {
+          id: "buy-1",
+          type: "buy",
+          date: "2026-06-01",
+          grams: 10,
+          unitPrice: 500,
+          amount: 5100,
+          note: ""
+        },
+        {
+          id: "buy-2",
+          type: "buy",
+          date: "2026-06-02",
+          grams: 2,
+          unitPrice: 600,
+          amount: 1200,
+          note: ""
+        },
+        {
+          id: "sell-1",
+          type: "sell",
+          date: "2026-06-03",
+          grams: 4,
+          unitPrice: 550,
+          amount: 2200,
+          note: ""
+        }
+      ],
+      540
+    );
+
+    expect(profitLossByTransaction["buy-1"]).toEqual({
+      remainingGrams: 6,
+      profitLoss: 217.2
+    });
+    expect(profitLossByTransaction["buy-2"]).toEqual({
+      remainingGrams: 2,
+      profitLoss: -127.6
+    });
+    expect(profitLossByTransaction["sell-1"]).toBeUndefined();
   });
 
   it("reports oversell validation errors", () => {
