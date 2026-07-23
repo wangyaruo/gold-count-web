@@ -33,15 +33,27 @@
         </el-radio-group>
       </el-form-item>
 
-      <el-form-item label="日期" prop="date">
-        <el-date-picker
-          v-model="form.date"
-          type="date"
-          value-format="YYYY-MM-DD"
-          placeholder="选择日期"
-          class="full-width"
-        />
-      </el-form-item>
+      <div class="form-row">
+        <el-form-item label="日期" prop="date">
+          <el-date-picker
+            v-model="form.date"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="选择日期"
+            class="full-width"
+          />
+        </el-form-item>
+
+        <el-form-item label="时间" prop="time">
+          <el-input
+            v-model="form.time"
+            type="time"
+            placeholder="选择时间"
+            step="1"
+            class="full-width"
+          />
+        </el-form-item>
+      </div>
 
       <div class="form-row">
         <el-form-item label="克数" prop="grams">
@@ -124,9 +136,37 @@ const emit = defineEmits<{
   "cancel-edit": [];
 }>();
 
+function padTimePart(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+function createNowParts(): Pick<TransactionDraft, "date" | "time"> {
+  const now = new Date();
+  return {
+    date: `${now.getFullYear()}-${padTimePart(now.getMonth() + 1)}-${padTimePart(
+      now.getDate()
+    )}`,
+    time: `${padTimePart(now.getHours())}:${padTimePart(
+      now.getMinutes()
+    )}:${padTimePart(now.getSeconds())}`
+  };
+}
+
+function normalizeTime(value: string | undefined): string {
+  if (!value) {
+    return "";
+  }
+
+  const [hours = "00", minutes = "00", seconds = "00"] = value.split(":");
+  return `${hours.padStart(2, "0")}:${minutes.padStart(
+    2,
+    "0"
+  )}:${seconds.padStart(2, "0")}`;
+}
+
 const emptyForm = (): TransactionDraft => ({
   type: "buy",
-  date: new Date().toISOString().slice(0, 10),
+  ...createNowParts(),
   grams: 0,
   unitPrice: 0,
   amount: 0,
@@ -140,6 +180,7 @@ const isDeriving = ref(false);
 const rules: FormRules<TransactionDraft> = {
   type: [{ required: true, message: "请选择交易类型", trigger: "change" }],
   date: [{ required: true, message: "请选择交易日期", trigger: "change" }],
+  time: [{ required: true, message: "请选择交易时间", trigger: "change" }],
   grams: [
     {
       type: "number",
@@ -168,6 +209,18 @@ const rules: FormRules<TransactionDraft> = {
 
 function assignForm(nextForm: TransactionDraft): void {
   Object.assign(form, nextForm);
+}
+
+function createFormDraft(transaction: GoldTransaction): TransactionDraft {
+  return {
+    type: transaction.type,
+    date: transaction.date,
+    time: normalizeTime(transaction.time) || "00:00:00",
+    grams: transaction.grams,
+    unitPrice: transaction.unitPrice,
+    amount: transaction.amount,
+    note: transaction.note
+  };
 }
 
 function setLinkedField(field: LinkedTransactionField, value: number): void {
@@ -212,7 +265,7 @@ function handleLinkedFieldUpdate(
 watch(
   () => props.editingTransaction,
   (transaction) => {
-    assignForm(transaction ? { ...transaction } : emptyForm());
+    assignForm(transaction ? createFormDraft(transaction) : emptyForm());
     formRef.value?.clearValidate();
   },
   { immediate: true }
@@ -239,6 +292,7 @@ async function submitForm(): Promise<void> {
   emit("save", {
     type: form.type,
     date: form.date,
+    time: normalizeTime(form.time),
     grams: form.grams ?? 0,
     unitPrice: form.unitPrice ?? 0,
     amount: form.amount ?? 0,

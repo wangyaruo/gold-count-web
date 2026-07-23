@@ -13,6 +13,9 @@
     <div class="table-scroll">
       <el-table :data="transactions" class="transaction-table">
         <el-table-column label="日期" prop="date" min-width="112" />
+        <el-table-column label="时间" min-width="94">
+          <template #default="{ row }">{{ formatTime(row.time) }}</template>
+        </el-table-column>
         <el-table-column label="类型" min-width="86">
           <template #default="{ row }">
             <el-tag :type="row.type === 'buy' ? 'success' : 'warning'">
@@ -123,6 +126,10 @@ function formatMoney(value: number): string {
 function formatSignedMoney(value: number): string {
   const prefix = value > 0 ? "+" : "";
   return `${prefix}${formatMoney(value)}`;
+}
+
+function formatTime(value: string | undefined): string {
+  return value || "00:00:00";
 }
 
 function formatGrams(value: number): string {

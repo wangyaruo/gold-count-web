@@ -77,6 +77,7 @@ describe("local production server", () => {
           id: "buy-1",
           type: "buy",
           date: "2026-07-01",
+          time: "10:30:00",
           grams: 10,
           unitPrice: 520,
           amount: 5200,

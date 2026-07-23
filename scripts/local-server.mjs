@@ -59,6 +59,7 @@ function normalizeLedgerData(value) {
       typeof transaction.id !== "string" ||
       (transaction.type !== "buy" && transaction.type !== "sell") ||
       typeof transaction.date !== "string" ||
+      (typeof transaction.time !== "undefined" && typeof transaction.time !== "string") ||
       typeof transaction.grams !== "number" ||
       typeof transaction.unitPrice !== "number" ||
       typeof amount !== "number" ||
@@ -71,6 +72,7 @@ function normalizeLedgerData(value) {
       id: transaction.id,
       type: transaction.type,
       date: transaction.date,
+      time: typeof transaction.time === "string" ? transaction.time : "00:00:00",
       grams: transaction.grams,
       unitPrice: transaction.unitPrice,
       amount,

@@ -76,6 +76,47 @@ describe("goldLedger", () => {
     expect(summary.remainingCost).toBe(4400);
   });
 
+  it("matches same-day transactions by time for FIFO calculation", () => {
+    const summary = calculateLedger(
+      [
+        {
+          id: "later-buy",
+          type: "buy",
+          date: "2026-06-01",
+          time: "15:00:00",
+          grams: 5,
+          unitPrice: 600,
+          amount: 3000,
+          note: ""
+        },
+        {
+          id: "early-buy",
+          type: "buy",
+          date: "2026-06-01",
+          time: "09:00:00",
+          grams: 5,
+          unitPrice: 500,
+          amount: 2500,
+          note: ""
+        },
+        {
+          id: "sell-1",
+          type: "sell",
+          date: "2026-06-01",
+          time: "10:00:00",
+          grams: 5,
+          unitPrice: 560,
+          amount: 2800,
+          note: ""
+        }
+      ],
+      620
+    );
+
+    expect(summary.realizedProfitLoss).toBe(300);
+    expect(summary.remainingCost).toBe(3000);
+  });
+
   it("uses total sell amount for realized profit", () => {
     const summary = calculateLedger(
       [
@@ -209,6 +250,7 @@ describe("goldLedger", () => {
       {
         type: "sell",
         date: "2026-06-02",
+        time: "10:00:00",
         grams: 6,
         unitPrice: 560,
         amount: 3360,
@@ -235,6 +277,7 @@ describe("goldLedger", () => {
       {
         type: "buy",
         date: "2026-06-01",
+        time: "09:00:00",
         grams: 5,
         unitPrice: 500,
         amount: 2500,
@@ -245,6 +288,7 @@ describe("goldLedger", () => {
           id: "buy-1",
           type: "buy",
           date: "2026-06-01",
+          time: "09:00:00",
           grams: 5,
           unitPrice: 500,
           amount: 2500,
@@ -254,6 +298,7 @@ describe("goldLedger", () => {
           id: "sell-1",
           type: "sell",
           date: "2026-06-01",
+          time: "10:00:00",
           grams: 5,
           unitPrice: 560,
           amount: 2800,
@@ -266,12 +311,13 @@ describe("goldLedger", () => {
     expect(errors).not.toContain("卖出克数不能超过当前持仓");
   });
 
-  it("sorts transactions by newest date first and then newest creation first", () => {
+  it("sorts transactions by newest date and time first", () => {
     const rows = sortTransactionsForDisplay([
       {
         id: "old",
         type: "buy",
         date: "2026-06-01",
+        time: "12:00:00",
         grams: 1,
         unitPrice: 500,
         amount: 500,
@@ -281,6 +327,7 @@ describe("goldLedger", () => {
         id: "newer-id",
         type: "sell",
         date: "2026-06-02",
+        time: "09:00:00",
         grams: 1,
         unitPrice: 520,
         amount: 520,
@@ -290,6 +337,7 @@ describe("goldLedger", () => {
         id: "newest-id",
         type: "buy",
         date: "2026-06-02",
+        time: "18:30:00",
         grams: 1,
         unitPrice: 510,
         amount: 510,

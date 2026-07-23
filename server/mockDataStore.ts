@@ -37,6 +37,7 @@ function normalizeLedgerData(value: unknown): LedgerData | null {
       typeof item.id !== "string" ||
       (item.type !== "buy" && item.type !== "sell") ||
       typeof item.date !== "string" ||
+      (typeof item.time !== "undefined" && typeof item.time !== "string") ||
       typeof item.grams !== "number" ||
       typeof item.unitPrice !== "number" ||
       typeof amount !== "number" ||
@@ -49,6 +50,7 @@ function normalizeLedgerData(value: unknown): LedgerData | null {
       id: item.id,
       type: item.type,
       date: item.date,
+      time: typeof item.time === "string" ? item.time : "00:00:00",
       grams: item.grams,
       unitPrice: item.unitPrice,
       amount,

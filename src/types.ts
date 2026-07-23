@@ -4,6 +4,7 @@ export interface GoldTransaction {
   id: string;
   type: TransactionType;
   date: string;
+  time?: string;
   grams: number;
   unitPrice: number;
   amount: number;

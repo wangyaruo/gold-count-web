@@ -31,14 +31,24 @@ export function calculateBankSellPrice(currentGoldPrice: number): number {
   return Math.max(currentGoldPrice - BANK_SELL_PRICE_DISCOUNT, 0);
 }
 
+function getTransactionTime(transaction: Pick<GoldTransaction, "time">): string {
+  return transaction.time || "00:00:00";
+}
+
+function getTransactionDateTime(transaction: GoldTransaction): string {
+  return `${transaction.date} ${getTransactionTime(transaction)}`;
+}
+
 function sortForCalculation(
   transactions: GoldTransaction[]
 ): GoldTransaction[] {
   return transactions
     .map((transaction, index) => ({ transaction, index }))
     .sort((left, right) => {
-      const byDate = left.transaction.date.localeCompare(right.transaction.date);
-      return byDate === 0 ? left.index - right.index : byDate;
+      const byDateTime = getTransactionDateTime(
+        left.transaction
+      ).localeCompare(getTransactionDateTime(right.transaction));
+      return byDateTime === 0 ? left.index - right.index : byDateTime;
     })
     .map(({ transaction }) => transaction);
 }
@@ -187,6 +197,10 @@ export function validateTransactionDraft(
     errors.push("请选择交易日期");
   }
 
+  if (!draft.time) {
+    errors.push("请选择交易时间");
+  }
+
   if (!draft.type) {
     errors.push("请选择交易类型");
   }
@@ -229,7 +243,9 @@ export function sortTransactionsForDisplay(
   transactions: GoldTransaction[]
 ): GoldTransaction[] {
   return [...transactions].sort((left, right) => {
-    const byDate = right.date.localeCompare(left.date);
-    return byDate === 0 ? right.id.localeCompare(left.id) : byDate;
+    const byDateTime = getTransactionDateTime(right).localeCompare(
+      getTransactionDateTime(left)
+    );
+    return byDateTime === 0 ? right.id.localeCompare(left.id) : byDateTime;
   });
 }
